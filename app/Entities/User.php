@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @Entity(repositoryClass="UserRepo")
+ * @Entity(repositoryClass="Rahulstech\Blogging\Repositories\UserRepo")
  * @Table(name="users")
  */
 class User {
@@ -29,9 +29,10 @@ class User {
     private string $username;
 
 	/**
+	 * @var Post[]
 	 * @OneToMany(targetEntity="Post", mappedBy="creator")
 	 */
-	private ArrayCollection $myPosts;
+	private $myPosts;
     
 	/**
 	 * @return int
@@ -44,6 +45,27 @@ class User {
 	 */
 	function getUsername(): string {
 		return $this->username;
+	}
+
+	/**
+	 * 
+	 * @return Post[]
+	 */
+	function getMyPosts() {
+		return $this->myPosts;
+	}
+
+	private function __construct()
+	{
+		$this->myPosts = new ArrayCollection();
+	}
+	
+	public static function  createNewFromArray(array $values): User
+	{
+		$user = new User();
+		if (array_key_exists("userId",$values)) $user->userId = $values["userId"];
+		if (array_key_exists("username",$values)) $user->username = $values["username"];
+		return $user;
 	}
 }
 
