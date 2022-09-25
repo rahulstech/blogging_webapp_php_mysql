@@ -1,0 +1,53 @@
+{% extends "layout.twig" %}
+
+{% block header %}
+{% include "user/navbar.twig" %}    
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid ">
+    {% set post = post ?? [] %}
+    <form action="" method="POST" enctype="application/x-www-form-urlencoded">
+
+        <div class="row mb-3 justify-content-center">
+            <div class="col-lg-10 col-12">
+                <div class="form-floating">
+                    <input name="postTitle" required type="text" class="form-control" id="floatingTitle"
+                        value="{{post.title ?? post.title}}"
+                        placeholder="Title">
+                    <label for="floatingTitle">Title</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3 justify-content-center">
+            <div class="col-lg-10 col-12">
+                <div class="form-floating">
+                    <input name="postShortDescription" required type="text" class="form-control" id="floatingShortDescription"
+                        value="{{post.shortDescription ?? post.shortDescription}}"
+                        placeholder="Title">
+                    <label for="floatingShortDescription">Short Description</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3 justify-content-center">
+            <div class="col-lg-10 col-12">
+                <label for="textContent" class="form-label">Your Post</label>
+                <textarea name="saveTextContent" required class="form-control" id="textContent" rows="15">{{post.textContent ?? post.textContent}}</textarea>
+            </div>
+        </div>
+
+        <div class="row justify-content-end">
+            <div class="col-2">
+                <input type="submit" class="btn btn-outline-secondary" value="Discard">
+            </div>
+            <div class="col-2">
+                <input type="submit" class="btn btn-primary px-4" value="Save">
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

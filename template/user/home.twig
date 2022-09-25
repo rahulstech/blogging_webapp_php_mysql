@@ -1,0 +1,43 @@
+{% extends "layout.twig" %}
+
+{% block header %}
+{% include "user/navbar.twig" %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        {% if me is defined %}
+        <div class="col-4">
+            <form action="" method="GET" enctype="application/x-www-form-urlencoded" class="d-flex mb-3">
+                <input class="form-control me-2" type="search" placeholder="Search by title" aria-label="Search">
+                <input type="submit" value="Search" class="btn btn-outline-primary"/>
+            </form>
+            <div class="list-group">
+                {% for post in me.myPosts %}
+                <a href="#" class="list-group-item list-group-item-action">{{post.title}}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% endif %}
+
+        <div class="col-8">
+            <div class="list-group">
+                {% for post in posts %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ post.title }}</h5>
+                        <small class="text-muted">{{ post.createdOn.format("M d, y h:i a") }}</small>
+                    </div>
+                    <small class="text-muted"><i>by {{ [post.creator.firstName,post.creator.lastName]|join("
+                            ")}}</i></small>
+                    <p class="mb-1">{{ post.shortDescription }}</p>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

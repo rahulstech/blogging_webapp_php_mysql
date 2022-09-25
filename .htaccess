@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Files of following types will be servered without redirecting
+RewriteRule \.(js|css|ico|gif|jpg|png|swf|ttf|eot)$ - [NC,L]
+
+# Redirects all requests to index.php
+RewriteRule . index.php [L]
