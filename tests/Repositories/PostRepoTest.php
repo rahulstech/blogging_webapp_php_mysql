@@ -56,4 +56,12 @@ class PostRepoTest extends DatabaseTestCase
                     User::createNewFromArray(array("userId"=>77)));
         $this->assertNotTrue($removed);
     }
+
+    /** @test */
+    public function getLastestPosts(): void
+    {
+        $posts = $this->repo->getLatestPosts();
+        $this->assertNotEmpty($posts,"no posts fetched");
+        $this->assertEquals(new DateTime("2022-10-04 13:30:00"),$posts[0]->getCreatedOn(),"fetched posts not sorted properly");
+    }
 }

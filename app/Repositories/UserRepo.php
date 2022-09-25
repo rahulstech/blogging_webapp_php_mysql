@@ -17,7 +17,9 @@ class UserRepo extends EntityRepository
     public function getByUsername(string $username): ?User {
         $dql = "SELECT u FROM ".User::class." u WHERE u.username = :username";
         $query = $this->createQueryBuilder("u")
+                    ->leftJoin("u.myPosts","p")
                     ->where("u.username = :username")
+                    ->orderBy("p.createdOn","DESC")
                     ->setParameter("username",$username)
                     ->getQuery();
         return $query->getOneOrNullResult(AbstractQuery::HYDRATE_OBJECT);

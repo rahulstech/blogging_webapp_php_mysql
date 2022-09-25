@@ -21,7 +21,10 @@ class UserRepoTest extends DatabaseTestCase
     public function createUser(): void 
     {
         $user = User::createNewFromArray(array(
-            "username" => "user1"
+            "username" => "user1",
+            "firstName" => "FirstName11",
+            "lastName" => "LastName11",
+            "email" => "email11@domain.com"
         ));
         $created = $this->repo->save($user);
         $this->assertTrue($created,"user not created");
@@ -60,7 +63,10 @@ class UserRepoTest extends DatabaseTestCase
     {
         $user = User::createNewFromArray(array(
             "userId" => 1,
-            "username" => "testuser1_updated"
+            "username" => "testuser1_updated",
+            "firstName" => "FirstName1",
+            "lastName" => "LastName1",
+            "email" => "email1@domain.com"
         ));
         $updated = $this->repo->save($user);
         $this->assertTrue($updated);

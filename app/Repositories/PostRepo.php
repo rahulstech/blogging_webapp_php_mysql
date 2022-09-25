@@ -16,6 +16,20 @@ class PostRepo extends EntityRepository
         return $post->getPostId() > 0;
     }
 
+    /**
+     * @return Post[]
+     */
+    public function getLatestPosts(): array
+    {
+        $query = $this->getEntityManager()->createQueryBuilder()
+                    ->select("p")
+                    ->from(Post::class,"p")
+                    ->orderBy("p.createdOn","DESC")
+                    ->setMaxResults(20)
+                    ->getQuery();
+        return $query->getResult();
+    }
+
     public function removePost(int $postId): bool
     {
         $query = $this->getEntityManager()->createQueryBuilder()
