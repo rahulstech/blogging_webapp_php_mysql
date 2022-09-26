@@ -1,0 +1,13 @@
+
+<form action="" method="GET" enctype="application/x-www-form-urlencoded" class="d-flex mb-3">
+    <input class="form-control me-2" 
+            name="searchbytitle" value="{{searchbytitle ?? searchbytitle }}" type="search"
+            autocomplete="off" placeholder="Search by title" aria-label="Search">
+    <input type="submit" value="Search" class="btn btn-outline-primary"/>
+</form>
+<div class="list-group">
+    {% set selectedpost = currentpost is defined ? currentpost.postId : -1 %}
+    {% for post in sidepanelposts %}
+    <a href="#" class="list-group-item list-group-item-action {{selectedpost == post.postId ? "active" : ""}} ">{{post.title}}</a>
+    {% endfor %}
+</div>

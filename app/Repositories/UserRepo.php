@@ -28,6 +28,8 @@ class UserRepo extends EntityRepository
     public function searchUser(string $searchkey): array {
         $query = $this->createQueryBuilder("u")
                     ->where("u.username LIKE :searchkey")
+                    ->orWhere("u.firstName LIKE :searchkey")
+                    ->orWhere("u.lastName LIKE :searchkey")
                     ->setParameter("searchkey","%".$searchkey."%")
                     ->getQuery();
         return $query->getResult();

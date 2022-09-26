@@ -30,6 +30,21 @@ class PostRepo extends EntityRepository
         return $query->getResult();
     }
 
+    /**
+     * @return Post[]
+     */
+    public function getPostsTitleContains(string $phrase): array
+    {
+        $query = $this->getEntityManager()->createQueryBuilder()
+                    ->select("p")
+                    ->from(Post::class,"p")
+                    ->where("p.title LIKE :title")
+                    ->orderBy("p.createdOn","DESC")
+                    ->setParameter(":title","%$phrase%")
+                    ->getQuery();
+        return $query->getResult();
+    }
+
     public function removePost(int $postId): bool
     {
         $query = $this->getEntityManager()->createQueryBuilder()

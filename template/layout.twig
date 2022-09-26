@@ -18,9 +18,12 @@
   
     {% block header %}{% endblock %}
 
-    {% block content %}{% endblock %}
+    <div class="pb-5">
+      {% block content %}{% endblock %}
+    </div>
+    
 
-    {% block footer %}{% endblock %}
+    {% include "footer.twig" %}
 
 
 

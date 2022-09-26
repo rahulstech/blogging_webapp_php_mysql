@@ -7,15 +7,32 @@
 {% block content %}
 
 <div class="container-fluid w-50 mx-auto">
-    <form action="">
-
+    <form action="" method="POST" enctype="multipart/form-data">
         <div class="row">
             <div class="col-lg-10 col-12">
                 <div class="form-floating mb-3">
                     <input name="signupUsername" value="{{ signupUsername ?? signupUsername }}" required type="text" 
-                        class="form-control" id="floatingUsername"
+                        class="form-control " id="floatingUsername"
                         placeholder="Username">
                     <label for="floatingUsername">Username</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-5 col-12">
+                <div class="form-floating mb-3">
+                    <input name="signupPassword" required type="password" class="form-control" id="floatingPassword"
+                        placeholder="Password">
+                    <label for="floatingPassword">Password</label>
+                </div>
+            </div>
+
+            <div class="col-lg-5 col-12">
+                <div class="form-floating mb-3">
+                    <input name="signupConfirmPassword" required type="password" class="form-control" id="floatingConfirmPassword"
+                        placeholder="Confirm Password">
+                    <label for="floatingConfirmPassword">Confirm Password</label>
                 </div>
             </div>
         </div>

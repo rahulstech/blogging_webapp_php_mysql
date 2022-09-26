@@ -24,7 +24,8 @@ class UserRepoTest extends DatabaseTestCase
             "username" => "user1",
             "firstName" => "FirstName11",
             "lastName" => "LastName11",
-            "email" => "email11@domain.com"
+            "email" => "email11@domain.com",
+            "passwordHash" => "pass$456"
         ));
         $created = $this->repo->save($user);
         $this->assertTrue($created,"user not created");
@@ -64,6 +65,7 @@ class UserRepoTest extends DatabaseTestCase
         $user = User::createNewFromArray(array(
             "userId" => 1,
             "username" => "testuser1_updated",
+            "passwordHash" => '$2y$10$cF2PxqnG00nr98OEiSNEre.ARkQAxDFq/n13pjzs4vr37rCEQzvvi',
             "firstName" => "FirstName1",
             "lastName" => "LastName1",
             "email" => "email1@domain.com"

@@ -64,4 +64,22 @@ class PostRepoTest extends DatabaseTestCase
         $this->assertNotEmpty($posts,"no posts fetched");
         $this->assertEquals(new DateTime("2022-10-04 13:30:00"),$posts[0]->getCreatedOn(),"fetched posts not sorted properly");
     }
+
+    /** @test */
+    public function getPostsTitleContains_KeyExists(): void 
+    {
+        $phrase = "testuser3";
+        $posts = $this->repo->getPostsTitleContains($phrase);
+        $this->assertNotNull($posts,"no result returned");
+        $this->assertEquals(1,count($posts),"expected number of results not fetched");
+        $this->assertEquals(5,$posts[0]->getPostId(),"wrong post fetched");
+    }
+
+    /** @test */
+    public function getPostsTitleContains_KeyNotExists(): void 
+    {
+        $phrase = "non existing";
+        $posts = $this->repo->getPostsTitleContains($phrase);
+        $this->assertEmpty($posts,"no result expected");
+    }
 }

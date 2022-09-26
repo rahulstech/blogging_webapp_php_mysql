@@ -1,0 +1,29 @@
+{% extends "layout.twig" %}
+
+{% block styles %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+{% endblock %}
+
+{% block header %}
+{% include "user/navbar.twig" %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+   <div class="text-center mb-3">
+      <p>
+         <span class="display-5">{{fullname(creator.firstName,creator.lastName)}}</span>
+         <small class="lead"><i>(<a class="text-secondary" href="#">{{creator.username}}</a>)</i></small>
+      </p>
+      <p>
+         <i class="fa fa-envelope"></i>
+         <a href="mailto:{{creator.email}}" target="_blank" class="text-secondary">{{creator.email}}</a>
+      </p>
+   </div>
+   {% include "user/postslist.twig" %}
+</div>
+
+{% endblock %}

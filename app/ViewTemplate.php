@@ -3,11 +3,10 @@
 namespace Rahulstech\Blogging;
 
 use DateTime;
-use Rahulstech\Blogging\Entities\Post;
-use Rahulstech\Blogging\Entities\User;
 use RuntimeException;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Rahulstech\Blogging\Helpers\Twig\TwigFunctions;
 
 class ViewTemplate
 {
@@ -21,7 +20,10 @@ class ViewTemplate
             $options["cache"] = $config["cache_dir"];
         }
 
-        ViewTemplate::$twigenv = new Environment($fsloader, $options);
+        $twigenv = new Environment($fsloader, $options);
+        $twigenv->addExtension(new TwigFunctions());
+
+        ViewTemplate::$twigenv = $twigenv;
     }
 
     public static function render(string $view, array $context = array()): string
@@ -43,51 +45,50 @@ class ViewTemplate
                     $rendered = ViewTemplate::render($view, array(
                         "title" => $view,
                         "me" => array(
-                            "myPosts" => array(
-                                array(
-                                    "postId" => 1,
-                                    "title" => "post 1 by testuser1"
-                                ),
-                                array(
-                                    "postId" => 2,
-                                    "title" => "post 2 by testuser1"
-                                )
-                            )
+                            "firstName" => "FirstName1",
+                            "lastName" => "LastName1"
                         ),
-                        "posts" => array(
-                            Post::createFromArray(array(
+                        "sidepanelposts" => array(
+                            array(
+                                "postId" => 1,
+                                "title" => "post 1 by testuser1"
+                            ),
+                            array(
+                                "postId" => 2,
+                                "title" => "post 2 by testuser1"
+                            )
+                            ),
+                        "postslist" => array(
+                            array(
                                 "postId" => 2,
                                 "title" => "post 2 by testuser1",
                                 "shortDescription" => "this is the second post of testuser1",
                                 "createdOn" => new DateTime("2022-10-04 13:30:00"),
-                                "creator" => User::createNewFromArray(array(
+                                "creator" => array(
                                     "userId" => 1,
                                     "firstName" => "FirstName1",
                                     "lastName" => "LastName1",
-                                )
-                                ))),
-                            Post::createFromArray(array(
+                                )),
+                            array(
                                 "postId" => 1,
                                 "title" => "post 1 by testuser1",
                                 "shortDescription" => "this is the first post of testuser1",
                                 "createdOn" => new DateTime("2022-10-04 08:08:00"),
-                                "creator" => User::createNewFromArray(array(
+                                "creator" => array(
                                     "userId" => 1,
                                     "firstName" => "FirstName1",
                                     "lastName" => "LastName1",
-                                )
-                                ))),
-                            Post::createFromArray(array(
+                                )),
+                            array(
                                 "postId" => 3,
                                 "title" => "post 1 by testuser2",
                                 "shortDescription" => "this is the first post of testuser2",
                                 "createdOn" => new DateTime("2022-09-09 00:00:00"),
-                                "creator" => User::createNewFromArray(array(
+                                "creator" => array(
                                     "userId" => 2,
                                     "firstName" => "FirstName2",
                                     "lastName" => "LastName2",
-                                )
-                                ))),
+                                )),
                         ),
                     )
                     );
@@ -103,14 +104,22 @@ class ViewTemplate
             case "user/signup.twig":
                 {
                     $rendered = ViewTemplate::render($view,array(
-                        "title"=>$view
+                        "title"=>$view,
                     ));
                 }
             break;
-            case "user/profile.twig":
+            case "user/myprofile.twig":
                 {
                     $rendered = ViewTemplate::render($view,array(
-                        "title"=>$view
+                        "title"=>$view,
+                        "me" => array(
+                            "userId" => 1,
+                            "username" => "testuser1",
+                            "firstName" => "FirstName1",
+                            "lastName" => "LastName1",
+                            "email" => "email1@domain.com"
+                        ),
+
                     ));
                 }
             break;
@@ -118,7 +127,11 @@ class ViewTemplate
                 {
                     $rendered = ViewTemplate::render($view,array(
                         "title"=>$view,
-                        "post" => Post::createFromArray(array(
+                        "me" => array(
+                            "firstName" => "FirstName1",
+                            "lastName" => "LastName1"
+                        ),
+                        "post" => array(
                             "postId" => 2,
                             "title" => "post 2 by testuser1",
                             "shortDescription" => "this is the second post of testuser1",
@@ -128,16 +141,89 @@ class ViewTemplate
                                             "this is the content of the first post by testuser1\n".
                                             "this is the content of the first post by testuser1\n".
                                             "this is the content of the first post by testuser1\n",
-                            "createdOn" => new DateTime("2022-10-04 13:30:00"),
-                            "creator" => User::createNewFromArray(array(
-                                "userId" => 1,
-                                "firstName" => "FirstName1",
-                                "lastName" => "LastName1",
+                            "createdOn" => new DateTime("2022-10-04 13:30:00")
                             )
-                            )))
                     ));
                 }
                 break;
+            case "user/viewpost.twig":
+                {
+                    $rendered = ViewTemplate::render($view,array(
+                        "title"=>$view,
+                        "me" => array(
+                            "firstName" => "FirstName1",
+                            "lastName" => "LastName1"
+                        ),
+                        "sidepanelposts" => array(
+                            array(
+                                "postId" => 2,
+                                "title" => "post 2 by testuser1"
+                            ),
+                            array(
+                                "postId" => 1,
+                                "title" => "post 1 by testuser1",
+                            ),
+                            array(
+                                "postId" => 3,
+                                "title" => "post 1 by testuser2",
+                            ),
+                        ),
+                        "currentpost" => array(
+                            "postId" => 1,
+                            "title" => "post 1 by testuser1",
+                            "shortDescription" => "this is the first post of testuser1",
+                            "createdOn" => new DateTime("2022-10-04 08:08:00"),
+                            "creator" => array(),
+                            "textContent" => "this is the content of the first post by testuser1\n".
+                                            "this is the content of the first post by testuser1\n".
+                                            "this is the content of the first post by testuser1\n".
+                                            "this is the content of the first post by testuser1\n".
+                                            "this is the content of the first post by testuser1\n".
+                                            "this is the content of the first post by testuser1\n",
+                        ),
+                        "searchbytitle" => "post"
+                    ));
+                }
+            break;
+            case "user/publicprofile.twig": 
+                {
+                    $myPosts = array(
+                        array(
+                            "postId" => 2,
+                            "title" => "post 2 by testuser1",
+                            "shortDescription" => "this is the second post of testuser1",
+                            "createdOn" => new DateTime("2022-10-04 13:30:00"),
+                            "creator" => array(
+                                "userId" => 1,
+                                "firstName" => "FirstName1",
+                                "lastName" => "LastName1",
+                            )),
+                        array(
+                            "postId" => 1,
+                            "title" => "post 1 by testuser1",
+                            "shortDescription" => "this is the first post of testuser1",
+                            "createdOn" => new DateTime("2022-10-04 08:08:00"),
+                            "creator" => array(
+                                "userId" => 1,
+                                "firstName" => "FirstName1",
+                                "lastName" => "LastName1",
+                            ))
+                            );
+                $rendered = ViewTemplate::render($view, array(
+                    "title" => $view,
+                    "creator" => array(
+                        "userId" => 1,
+                        "username" => "testuser1",
+                        "firstName" => "FirstName1",
+                        "lastName" => "LastName1",
+                        "email" => "email1@domain.com",
+                        "myPosts" => $myPosts,
+                    ),
+                    "postslist" => $myPosts
+                )
+                );
+            }
+            break;
             default:
                 {
                     $rendered = ViewTemplate::render("http/404.twig", array(

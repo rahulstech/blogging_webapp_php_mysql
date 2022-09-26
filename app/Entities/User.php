@@ -29,6 +29,9 @@ class User {
 	 */
     private string $username;
 
+	/** @Column() */
+	private string $passwordHash;
+
 	/** @Column(length=100) */
 	private string $firstName;
 
@@ -55,6 +58,14 @@ class User {
 	 */
 	function getUsername(): string {
 		return $this->username;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function checkPassword(string $password): bool 
+	{
+		return password_verify($password,$this->passwordHash);
 	}
 
 	/**
@@ -98,12 +109,18 @@ class User {
 	{
 		$user = new User();
 		if (array_key_exists("userId",$values)) $user->userId = $values["userId"];
+		if (array_key_exists("passwordHash",$values)) $user->passwordHash = User::has_password($values["passwordHash"]);
 		if (array_key_exists("username",$values)) $user->username = $values["username"];
 		if (array_key_exists("firstName",$values)) $user->firstName = $values["firstName"];
 		if (array_key_exists("lastName",$values)) $user->lastName = $values["lastName"];
 		if (array_key_exists("email",$values)) $user->email = $values["email"];
 		if (array_key_exists("myPosts",$values)) $user->myPosts = $values["myPosts"];
 		return $user;
+	}
+
+	public static function has_password(string $password): string 
+	{
+		return password_hash($password,PASSWORD_DEFAULT);
 	}
 }
 
