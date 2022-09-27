@@ -7,12 +7,6 @@
 
 {% endblock %}
 
-{% block styles %}
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-{% endblock %}
-
 {% block header %}
 {% include "user/navbar.twig" %}
 {% endblock %}
@@ -23,19 +17,19 @@
         <div class="col-lg-3 col-4">
             {% include "user/searchpostsidepanel.twig" %}
         </div>
-        <div class="col-8">
+        <div class="col-lg-9 col-8">
             <div class="container-fluid">
                 <!-- 
                 actions buttons for current post.
                 show this if user is viewing own post
                 -->
-                {% if me is defined %}
+                {% if me == currentpost.creator %}
                 <div class="container-fluid d-flex justify-content-end mb-3">
-                    <a href="#" class="btn btn-primary text-light me-2">
+                    <a href="#" class="btn btn-primary me-2">
                         <i class="fa fa-pencil"></i>
                         Edit
                     </a>
-                    <button class="btn btn-danger text-light">
+                    <button class="btn btn-danger">
                         <i class="fa fa-trash"></i>
                         Delete
                     </button>

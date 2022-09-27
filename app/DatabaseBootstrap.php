@@ -2,8 +2,13 @@
 
 namespace Rahulstech\Blogging;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Setup;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
+use Rahulstech\Blogging\Entities\Post;
+use Rahulstech\Blogging\Entities\User;
+use Rahulstech\Blogging\Repositories\PostRepo;
+use Rahulstech\Blogging\Repositories\UserRepo;
 
 class DatabaseBootstrap
 {
@@ -15,30 +20,52 @@ class DatabaseBootstrap
 
     public static function setup() : void
     {
-        $paths = [dirname(__DIR__) . '\\app'];
-        $isDevMode = true;
-        $conn = array(
-            'driver' => 'mysqli',
-            'user' => 'root',
-            'password' => '',
-            'host' => 'localhost',
-            'port' => '3306',
-            'dbname' => "blogging"
-        );
-        $config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode,null,null,false);
-        DatabaseBootstrap::$em = EntityManager::create($conn, $config);
+        if (is_null(DatabaseBootstrap::$em))
+        {
+            $paths = [dirname(__DIR__) . '\\app'];
+            $isDevMode = true;
+            $conn = array(
+                'driver' => DB_DRIVER,
+                'user' => DB_USER,
+                'password' => DB_PASS,
+                'host' => DB_HOST,
+                'port' => DB_PORT,
+                'dbname' => DB_NAME
+            );
+            $config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode,null,null,false);
+            DatabaseBootstrap::$em = EntityManager::create($conn, $config);
+        }
     }
 
     public static function setup_test(): void 
     {
-        $paths = [dirname(__DIR__) . '\\app'];
-        $isDevMode = true;
-        $conn = array(
-            'driver' => 'pdo_sqlite',
-            'memory' => true
-        );
-        $config = Setup::createAnnotationMetadataConfiguration($paths,$isDevMode,null,null,false);
-        DatabaseBootstrap::$em = EntityManager::create($conn, $config);
+        if (is_null(DatabaseBootstrap::$em))
+        {
+            $paths = [dirname(__DIR__) . '\\app'];
+            $isDevMode = true;
+            $conn = array(
+                'driver' => TEST_DB_DRIVER,
+                'memory' => true
+            );
+            $config = Setup::createAnnotationMetadataConfiguration($paths,$isDevMode,null,null,false);
+            DatabaseBootstrap::$em = EntityManager::create($conn, $config);
+        }
+    }
+
+    public static function getUserRepo(): ?UserRepo
+    {
+        return DatabaseBootstrap::getRepository(User::class);
+    }
+
+    public static function getPostRepo(): ?PostRepo
+    {
+        return DatabaseBootstrap::getRepository(Post::class);
+    }
+
+    public static function getRepository(string $entityclass): ?EntityRepository
+    {
+        if (!is_null(DatabaseBootstrap::$em)) return DatabaseBootstrap::$em->getRepository($entityclass);
+        return null;
     }
 
     public static function getEntityManager(): ?EntityManager
@@ -46,10 +73,9 @@ class DatabaseBootstrap
         return DatabaseBootstrap::$em;
     }
 
-
     public static function close(): void
     {
-        if (is_null(DatabaseBootstrap::$em))
+        if (!is_null(DatabaseBootstrap::$em))
         {
             DatabaseBootstrap::$em->close();
             DatabaseBootstrap::$em = null;
