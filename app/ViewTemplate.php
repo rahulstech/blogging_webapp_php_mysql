@@ -23,6 +23,7 @@ class ViewTemplate
 
             $twigenv = new Environment($fsloader, $options);
             $twigenv->addExtension(new TwigFunctions());
+            $twigenv->addGlobal("__GET",$_GET);
 
             ViewTemplate::$twigenv = $twigenv;
         }
@@ -33,7 +34,7 @@ class ViewTemplate
         if (!is_null(ViewTemplate::$twigenv)) {
             return ViewTemplate::$twigenv->render($view, $context);
         }
-        return "";        
+        return "";
     }
 
     public static function test(): void

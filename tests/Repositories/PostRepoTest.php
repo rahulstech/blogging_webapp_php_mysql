@@ -66,20 +66,34 @@ class PostRepoTest extends DatabaseTestCase
     }
 
     /** @test */
-    public function getPostsTitleContains_KeyExists(): void 
+    public function getCreatorPostsTitleContains(): void 
     {
-        $phrase = "testuser3";
-        $posts = $this->repo->getPostsTitleContains($phrase);
-        $this->assertNotNull($posts,"no result returned");
-        $this->assertEquals(1,count($posts),"expected number of results not fetched");
-        $this->assertEquals(5,$posts[0]->getPostId(),"wrong post fetched");
+        $creator = $this->getEntityManager()->getReference(User::class,1);
+        $phrase = "2";
+        $posts = $this->repo->getCreatorPostsTitleContains($creator,$phrase);
+        $this->assertNotEmpty($posts,"fetched empty result");
+        $this->assertEquals(2,count($posts),"fetched worng no of results");
+        $this->assertEquals(2,$posts[0]->getPostId(),"fetched worong results");
     }
 
     /** @test */
-    public function getPostsTitleContains_KeyNotExists(): void 
+    public function getCreatorPostsTitleContains_Pagination(): void 
     {
-        $phrase = "non existing";
-        $posts = $this->repo->getPostsTitleContains($phrase);
-        $this->assertEmpty($posts,"no result expected");
+        $creator = $this->getEntityManager()->getReference(User::class,1);
+        $phrase = "2";
+        $posts = $this->repo->getCreatorPostsTitleContains($creator,$phrase,DB_MAX_RESULT,1);
+        $this->assertNotEmpty($posts,"fetched empty result");
+        $this->assertEquals(1,count($posts),"fetched worng no of results");
+        $this->assertEquals(6,$posts[0]->getPostId(),"fetched worong results");
+    }
+
+    /** @test */
+    public function getLatestPostsTitleContains(): void 
+    {
+        $phrase = "testuser1";
+        $posts = $this->repo->getLatestPostsTitleContains($phrase);
+        $this->assertNotEmpty($posts,"fetched empty result");
+        $this->assertEquals(3,count($posts),"fetched worng no of results");
+        $this->assertEquals(2,$posts[0]->getPostId(),"fetched worong results");
     }
 }

@@ -9,6 +9,7 @@ use Rahulstech\Blogging\Entities\Post;
 use Rahulstech\Blogging\Entities\User;
 use Rahulstech\Blogging\Repositories\PostRepo;
 use Rahulstech\Blogging\Repositories\UserRepo;
+use RuntimeException;
 
 class DatabaseBootstrap
 {
@@ -64,13 +65,23 @@ class DatabaseBootstrap
 
     public static function getRepository(string $entityclass): ?EntityRepository
     {
-        if (!is_null(DatabaseBootstrap::$em)) return DatabaseBootstrap::$em->getRepository($entityclass);
-        return null;
+        DatabaseBootstrap::checkSetupOrThrow();
+        return DatabaseBootstrap::$em->getRepository($entityclass);
     }
 
     public static function getEntityManager(): ?EntityManager
-    {
+    { 
         return DatabaseBootstrap::$em;
+    }
+
+    public static function emptify(): void
+    {
+        DatabaseBootstrap::checkSetupOrThrow();
+        $em = DatabaseBootstrap::getEntityManager();
+        $em->beginTransaction();
+        $em->createQueryBuilder()->delete(Post::class)->getQuery()->execute();
+        $em->createQueryBuilder()->delete(User::class)->getQuery()->execute();
+        $em->commit();
     }
 
     public static function close(): void
@@ -80,5 +91,10 @@ class DatabaseBootstrap
             DatabaseBootstrap::$em->close();
             DatabaseBootstrap::$em = null;
         }
+    }
+
+    private static function checkSetupOrThrow(): void 
+    {
+        if (is_null(DatabaseBootstrap::$em)) throw new RuntimeException("setup database first");
     }
 }

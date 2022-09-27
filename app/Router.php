@@ -3,6 +3,8 @@
 namespace Rahulstech\Blogging;
 
 use Klein\Klein;
+use Klein\Route;
+use Rahulstech\Blogging\Helpers\Context;
 class Router
 {
     private static ?Klein $klein = null;
@@ -14,8 +16,10 @@ class Router
         if(is_null(Router::$klein))
         {
             $klein = new Klein();
+            $klein->onHttpError(function($code,$router){}); // TODO: implement http error handler
+        
             Router::$klein = $klein;
-
+            Router::addDefaultRoutes();
             Router::loadRoutes();
         }
     }
@@ -32,6 +36,14 @@ class Router
         {
             Router::$klein->dispatch();
         }
+    }
+
+    private static function addDefaultRoutes(): void 
+    {
+        $klein = Router::$klein;
+        $klein->respond(function($req,$res,$service){
+            $service->context = new Context();
+        });
     }
 
     private static function loadRoutes(): void 

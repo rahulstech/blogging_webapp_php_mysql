@@ -9,23 +9,23 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% if me is defined %}
                 <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="#">Log Out</a>
+                    <a class="nav-link" href="/logout">Log Out</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile(<i>{{fullname(me.firstName,me.lastName)}}</i>)</a>
+                    <a class="nav-link" href="/profile">Profile(<i>{{fullname(me.firstName,me.lastName)}}</i>)</a>
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="#">Log In</a>
+                    <a class="nav-link" href="/login">Log In</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Sign Up</a>
+                    <a class="nav-link" href="/signup">Sign Up</a>
                 </li>
                 {% endif %}
 
             </ul>
-            <form class="d-flex">
-                <input class="form-control me-2" type="search" placeholder="Search anything..." aria-label="Search">
+            <form action="" enctype="application/x-www-form-urlencoded" method="GET" class="d-flex">
+                <input name="searchAnything" value="{{searchAnything}}" class="form-control me-2" type="search" placeholder="Search anything..." aria-label="Search">
                 <button class="btn btn-outline-primary" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
             </form>
         </div>

@@ -16,7 +16,7 @@
    <div class="text-center mb-3">
       <p>
          <span class="display-5">{{fullname(creator.firstName,creator.lastName)}}</span>
-         <small class="lead"><i>(<a class="text-secondary" href="#">{{creator.username}}</a>)</i></small>
+         <small class="text-muted">since {{formatprettydateshort(creator.joinedOn)}}</small>
       </p>
       <p>
          <i class="fa fa-envelope"></i>

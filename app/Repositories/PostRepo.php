@@ -25,7 +25,7 @@ class PostRepo extends EntityRepository
                     ->select("p")
                     ->from(Post::class,"p")
                     ->orderBy("p.createdOn","DESC")
-                    ->setMaxResults(20)
+                    ->setMaxResults(10)
                     ->getQuery();
         return $query->getResult();
     }
@@ -33,17 +33,47 @@ class PostRepo extends EntityRepository
     /**
      * @return Post[]
      */
-    public function getPostsTitleContains(string $phrase): array
+    public function getLatestPostsTitleContains(string $phrase): array 
+    {
+        $postIds = $this->getEntityManager()->createQueryBuilder()
+                    ->select("p.postId")
+                    ->from(Post::class,"p")
+                    ->orderBy("p.createdOn","DESC")
+                    ->setMaxResults(10)
+                    ->getQuery()
+                    ->getSingleColumnResult();
+        $query = $this->getEntityManager()->createQueryBuilder()
+                    ->select("p")
+                    ->from(Post::class,"p")
+                    ->where("p.postId IN(:postIds)")
+                    ->andWhere("p.title LIKE :title")
+                    ->setParameter("postIds",$postIds)
+                    ->setParameter("title","%$phrase%")
+                    ->orderBy("p.createdOn","DESC")
+                    ->getQuery();
+        return $query->getResult();
+    }
+
+    /**
+     * @return Post[]
+     */
+    public function getCreatorPostsTitleContains(User $creator, string $phrase, int $max = DB_MAX_RESULT, int $skip = 0): array
     {
         $query = $this->getEntityManager()->createQueryBuilder()
                     ->select("p")
                     ->from(Post::class,"p")
-                    ->where("p.title LIKE :title")
+                    ->where("p.creator = :creator")
+                    ->andWhere("p.title LIKE :title")
                     ->orderBy("p.createdOn","DESC")
+                    ->setParameter("creator",$creator)
                     ->setParameter(":title","%$phrase%")
+                    ->setFirstResult(max(abs($skip),0))
+                    ->setMaxResults(min(abs($max),DB_MAX_RESULT))
                     ->getQuery();
         return $query->getResult();
     }
+
+    
 
     public function removePost(int $postId): bool
     {

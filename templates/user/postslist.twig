@@ -1,12 +1,12 @@
 <div class="list-group">
     {% for post in postslist %}
     <div class="list-group-item list-group-item-action">
-        <a href="#" class="text-decoration-none text-dark">
+        <a href="{{post.postId}}" class="text-decoration-none text-dark">
             <div class="d-flex w-100 justify-content-between">
                 <h5 class="mb-1">{{ post.title }}</h5>
-                <small class="text-muted">{{ post.createdOn.format("M d, y h:i a") }}</small>
+                <small class="text-muted">{{ formatprettydatetimeshort(post.createdOn) }}</small>
             </div>
-            <small class="text-muted"><i>by <a href="#" class="text-secondary">{{ [post.creator.firstName,post.creator.lastName]|join(" ")}} </a></i></small>
+            <small class="text-muted"><i>by <a href="/profile/{{post.creator.username}}" class="text-secondary">{{ [post.creator.firstName,post.creator.lastName]|join(" ")}} </a></i></small>
             <p class="mb-1">{{ post.shortDescription }}</p>
         </a>
     </div>

@@ -112,7 +112,7 @@ class UserRepoTest extends DatabaseTestCase
     /** @test */
     public function countPostForUserHavingPosts(): void
     {
-        $user = $this->repo->find(1);
+        $user = $this->repo->find(2);
         $this->assertNotNull($user->getMyPosts(), "no post loadded");
         $this->assertEquals(2,count($user->getMyPosts()),"required number of posts not loaded");
     }

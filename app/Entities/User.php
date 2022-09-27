@@ -41,6 +41,9 @@ class User {
 	/** @Column() */
 	private string $email;
 
+	/** @Column() */
+	private DateTime $joinedOn;
+
 	/**
 	 * @var Post[]
 	 * @OneToMany(targetEntity="Post", mappedBy="creator")
@@ -100,8 +103,17 @@ class User {
 		return $this->email;
 	}
 
+	/**
+	 * @return DateTime
+	 */
+	public function getJoinedOn(): DateTime
+	{
+		return $this->joinedOn;
+	}
+
 	private function __construct()
 	{
+		$this->joinedOn = new DateTime();
 		$this->myPosts = new ArrayCollection();
 	}
 	
@@ -115,6 +127,7 @@ class User {
 		if (array_key_exists("lastName",$values)) $user->lastName = $values["lastName"];
 		if (array_key_exists("email",$values)) $user->email = $values["email"];
 		if (array_key_exists("myPosts",$values)) $user->myPosts = $values["myPosts"];
+		if (array_key_exists("joinedOn",$values)) $user->joinedOn = $values["joinedOn"];
 		return $user;
 	}
 
