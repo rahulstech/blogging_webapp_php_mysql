@@ -10,11 +10,11 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 class UserRepoTest extends DatabaseTestCase
 {
-    private UserRepo $repo;
+    private UserRepo $userRepo;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->repo = $this->getEntityManager()->getRepository(User::class);
+        $this->userRepo = $this->getEntityManager()->getRepository(User::class);
     }
 
     /** @test */
@@ -27,7 +27,7 @@ class UserRepoTest extends DatabaseTestCase
             "email" => "email11@domain.com",
             "passwordHash" => "pass$456"
         ));
-        $created = $this->repo->save($user);
+        $created = $this->userRepo->save($user);
         $this->assertTrue($created,"user not created");
     }
 
@@ -35,7 +35,7 @@ class UserRepoTest extends DatabaseTestCase
     public function getExistingUserByUsername(): void
     {
         $username = "testuser1";
-        $testuser1 = $this->repo->getByUsername($username);
+        $testuser1 = $this->userRepo->getByUsername($username);
         $this->assertNotNull($testuser1,"existing user not fetched");
         $this->assertEquals($username,$testuser1->getUsername(),"fetched user with different username");
     }
@@ -44,7 +44,7 @@ class UserRepoTest extends DatabaseTestCase
     public function getNotExistingUserByUsername(): void
     {
         $username = "nonexistinguser";
-        $user = $this->repo->find($username);
+        $user = $this->userRepo->find($username);
         $this->assertNull($user);
     }
 
@@ -56,7 +56,7 @@ class UserRepoTest extends DatabaseTestCase
         $user = User::createNewFromArray(array(
             "username" => "testuser1"
         ));
-        $this->repo->save($user);
+        $this->userRepo->save($user);
     }
 
     /** @test */
@@ -70,7 +70,7 @@ class UserRepoTest extends DatabaseTestCase
             "lastName" => "LastName1",
             "email" => "email1@domain.com"
         ));
-        $updated = $this->repo->save($user);
+        $updated = $this->userRepo->save($user);
         $this->assertTrue($updated);
     }
 
@@ -83,12 +83,12 @@ class UserRepoTest extends DatabaseTestCase
             "userId" => 2,
             "username" => "testuser1"
         ));
-        $this->repo->save($user);
+        $this->userRepo->save($user);
     }
 
     /** @test */
     public function searchUser(): void {
-        $users = $this->repo->searchUser("test");
+        $users = $this->userRepo->searchUser("test");
         $this->assertNotNull($users,"no result found");
         $this->assertEquals(3,count($users),"number of results does not match");
     }
@@ -97,7 +97,7 @@ class UserRepoTest extends DatabaseTestCase
     public function removeExistingUser(): void
     {
         $userId = 1;
-        $removed = $this->repo->removeUser($userId);
+        $removed = $this->userRepo->removeUser($userId);
         $this->assertTrue($removed);
     }
 
@@ -105,14 +105,14 @@ class UserRepoTest extends DatabaseTestCase
     public function removeNonExistingUser(): void
     {
         $userId = 25;
-        $removed = $this->repo->removeUser($userId);
+        $removed = $this->userRepo->removeUser($userId);
         $this->assertNotTrue($removed);
     }
 
     /** @test */
     public function countPostForUserHavingPosts(): void
     {
-        $user = $this->repo->find(2);
+        $user = $this->userRepo->find(2);
         $this->assertNotNull($user->getMyPosts(), "no post loadded");
         $this->assertEquals(2,count($user->getMyPosts()),"required number of posts not loaded");
     }

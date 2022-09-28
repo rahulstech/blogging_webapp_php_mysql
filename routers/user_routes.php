@@ -1,6 +1,8 @@
 <?php
+use Rahulstech\Blogging\Dtos\UserDTO;
 
 define("KEY_AUTHTOKEN","authtoken");
+define("KEY_OLD_PASSWORD","old_password");
 
 use Klein\App;
 use Klein\Request;
@@ -13,13 +15,10 @@ use Rahulstech\Blogging\Helpers\AuthToken;
 
 $router = Router::getRouter();
 
-
-
 /**
  * middleware for checking authentication token
  */
-
-$router->respond(function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
+$router->respond(array("GET","POST"),"*",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
     $cookie = $req->cookies()->get(KEY_AUTHTOKEN);
     if (null != $cookie)
     {
@@ -53,8 +52,6 @@ $router->get("/?",function(Request $req,AbstractResponse $res, ServiceProvider $
     return ViewTemplate::render("user/home.twig",$service->context->toArray());
 });
 
-
-
 $router->respond(array("GET","POST"), "/login",function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app){
     
     $context = $service->context;
@@ -62,40 +59,49 @@ $router->respond(array("GET","POST"), "/login",function(Request $req, AbstractRe
     {
         $res->redirect("/");
     }
-    
+
     if ($req->method("POST"))
     {
-        $username = $req->paramsPost()->get("loginUsername");
-        $password = $req->paramsPost()->get("loginPassword");
-
+        $userDto = new UserDTO($_POST);
+        $username = $userDto->username;
+        $password = $userDto->password;
         $user = DatabaseBootstrap::getUserRepo()->getByUsername($username);
         if (null === $user)
         {
-            $context->put("loginError",array(
-                "loginUsername" => "incorrect username"
-            ));
+            $userDto->usernameError("no user found");
         }
         else if (!$user->checkPassword($password)) 
         {
-            $context->put("loginError",array(
-                "logingPassword" => "incorrect password"
-            ));
+            $userDto->passwordError("incorrect password");
         }
         else
         {
-            echo "successful";
             $authtoken = (new AuthToken())
                             ->setUserId($user->getUserId());
             $res->cookie(KEY_AUTHTOKEN,$authtoken->encode());
             $res->redirect("/");
         }
+        $context->put("userDto",$userDto);
     }
     return ViewTemplate::render("user/login.twig",$service->context->toArray());
 });
 
 $router->respond(array("GET","POST"),"/signup",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
+    $context = $service->context;
+    if ($req->method("POST"))
+    {
+        $userDto = new UserDTO($_POST);
+        $user = $userDto->toUser();
+        $saved = DatabaseBootstrap::getUserRepo()->save($user);
+        if ($saved)
+        {
+            // TODO: login
+            $res->redirect("/");
+        }
+        $context->put("userDto",$userDto);
+    }
     
-    return ViewTemplate::render("user/signup.twig");
+    return ViewTemplate::render("user/signup.twig",$context->toArray());
 });
 
 $router->get("/[:postpath]/[:creator]?/post/[:id]", function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app){
@@ -143,20 +149,64 @@ $router->get("/[:postpath]/[:creator]?/post/[:id]", function(Request $req, Abstr
 
 # restricted resources: requires login
 
+$router->respond(array("GET","POST"),"/[profile|post]",function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app){
+    if (!$service->context->exists("me"))
+    {
+        $res->code(403);
+        $res->send();
+    }
+});
+
+$router->respond(array("GET","POST"),"/[profile:action]?/changepassword",function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app){
+    $isactionprofile = null!==$req->param("action");
+    if ($isactionprofile)
+    {
+    }
+    $password = $req->paramsPost()->get("password");
+    $confirmPassword = $req->paramsPost()->get("password");
+
+});
+
 $router->with("/profile",function($router){
+    
     $router->respond(array("GET","POST"),"/?",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
         $context = $service->context;
+        $me = $context->get("me");
+        $userDto = new UserDTO($me);
+        if ($req->method("POST"))
+        {
+            $submitwhat = $req->paramsPost()->get("submitwhat");
+            if ("deleteallposts" == $submitwhat)
+            {
+                $removed = DatabaseBootstrap::getPostRepo()->removeAllPostsOfCreator($me);
+            }
+            else 
+            {
+                $userDto->valuesFormInput($_POST);
+                $updatedme = $userDto->toUser($me);
+                DatabaseBootstrap::getUserRepo()->save($updatedme);
+            }
+            
+        }
+        $context->put("userDto",$userDto);
         return ViewTemplate::render("user/myprofile.twig",$context->toArray());
     });
     
-    $router->get("/[:username]",function($req,$res,$service,$app){
+    $router->get("/[:username]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
+        $context = $service->context;
         $username = $req->param("username");
         $creator = DatabaseBootstrap::getUserRepo()->getByUsername($username);
-        return ViewTemplate::render("user/publicprofile.twig",array(
-            "creator" => $creator,
-            "postpath" => "/profile/$username",
-            "postslist" => $creator->getMyPosts()
-        ));
+        if (null!==$creator)
+        {
+            $context->put("creator",$creator);
+            $context->put("postslist",$creator->getMyPosts());
+        }
+        else
+        {
+            $res->code(404);
+            $res->send();
+        }
+        return ViewTemplate::render("user/publicprofile.twig",$context->toArray());
     });
 });
 

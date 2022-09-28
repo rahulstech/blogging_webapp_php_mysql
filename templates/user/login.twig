@@ -1,20 +1,25 @@
 {% extends "layout.twig" %}
 
 {% block header %}
-{% include "navbar.twig" %}    
+{% include "navbar.twig" %}
 {% endblock %}
 
 {% block content %}
 
 <div class="container-fluid w-50 mx-auto">
     <form action="/login" method="POST" enctype="multipart/form-data">
-
         <div class="row">
             <div class="col-lg-10 col-12">
                 <div class="form-floating mb-3">
-                    <input name="loginUsername" value="{{ loginUsername ?? loginUsername }}" required type="text" class="form-control" id="floatingUsername"
+                    <input name="username" value="{{ userDto.username }}" required type="text"
+                        class="form-control {{ userDto.errors.username ? " is-invalid" }}" id="floatingUsername"
                         placeholder="Username">
                     <label for="floatingUsername">Username</label>
+                    {% if userDto.errors.username %}
+                    <div class="invalid-feedback">
+                        {{ userDto.errors.username }}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -22,9 +27,14 @@
         <div class="row">
             <div class="col-lg-10 col-12">
                 <div class="form-floating mb-3">
-                    <input name="loginPassword"  required type="password" class="form-control" id="floatingPassword"
+                    <input name="password" required type="password" class="form-control {{userDto.errors.password ? "is-invalid"}}" id="floatingPassword"
                         placeholder="Password">
                     <label for="floatingPassword">Password</label>
+                    {% if userDto.errors.password %}
+                    <div class="invalid-feedback">
+                        {{ userDto.errors.password }}
+                    </div>
+                    {% endif %}
                 </div>
                 <p class="float-end"><a href="/changepassword">Forget Password</a></p>
             </div>
@@ -32,7 +42,8 @@
 
         <div class="row justify-content-center">
             <div class="col-4">
-                <button type="submit" class="btn btn-primary mb-3"><i class="fa fa-sign-in me-2" aria-hidden="true"></i>Log In</button>
+                <button type="submit" class="btn btn-primary mb-3"><i class="fa fa-sign-in me-2"
+                        aria-hidden="true"></i>Log In</button>
             </div>
         </div>
 
@@ -41,8 +52,8 @@
                 <small class="d-block mb-3">not registered? <a href="/login">Sign Up</a></small>
             </div>
         </div>
-        </div>
-    </form>
+</div>
+</form>
 </div>
 
 {% endblock %}

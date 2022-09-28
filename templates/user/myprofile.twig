@@ -13,14 +13,14 @@
     <div class="row justify-content-center mb-3">
         <div class="col-lg-8 col-12">
 
-            <p class="h4 text-center">Basic Personal Details</p>
+            <p class="h4 text-center mb-3">Basic Personal Details</p>
 
-            <form action="" method="POST" enctype="multipart/form-data">
+            <form action="/profile" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="submitwhat" value="basicdetails" />
                 <div class="row row-cols-3">
                     <div class="col">
                         <div class="form-floating mb-3">
-                            <input name="profileFirstname"
-                                value="{{ profileFirstname ? profileFirstname : me.firstName}}" required type="text"
+                            <input name="firstName" value="{{ userDto.firstName }}" required type="text"
                                 class="form-control" id="floatingFirstname" placeholder="First Name">
                             <label for="floatingFirstname">First Name</label>
                         </div>
@@ -28,8 +28,8 @@
 
                     <div class="col">
                         <div class="form-floating mb-3">
-                            <input name="pofileLastname" value="{{ profileLastname ? profileLastname : me.lastName}}"
-                                required type="text" class="form-control" id="floatingLastname" placeholder="Last Name">
+                            <input name="lastName" value="{{ userDto.lastName}}" required type="text"
+                                class="form-control" id="floatingLastname" placeholder="Last Name">
                             <label for="floatingLastname">Last Name</label>
                         </div>
                     </div>
@@ -50,13 +50,14 @@
 
     <div class="row justify-content-center mb-3">
         <div class="col-lg-8 col-12">
-            <p class="h4 text-center">Log In Details</p>
-            <form action="" method="POST" enctype="multipart/form-data">
+            <p class="h4 text-center mb-3">Log In Details</p>
+            <form action="/profile" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="submitwhat" value="logindetails" />
                 <div class="row row-cols-2">
                     <div class="col">
                         <div class="form-floating mb-3">
-                            <input name="profileUsername" value="{{ profileUsername ? profileUsername : me.username }}"
-                                required type="text" class="form-control" id="floatingUsername" placeholder="Username">
+                            <input name="username" value="{{ userDto.username }}" required type="text"
+                                class="form-control" id="floatingUsername" placeholder="Username">
                             <label for="floatingUsername">Username</label>
                         </div>
                     </div>
@@ -81,13 +82,14 @@
     <div class="row justify-content-center mb-3">
         <div class="col-lg-8 col-12">
             <p class="h4 text-center ">Contact Details</p>
-            <form action="" method="POST" enctype="multipart/form-data">
+            <form action="/profile" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="submitwhat" value="contactdetails" />
                 <div class="row">
                     <div class="row row-cols-2">
                         <div class="col">
                             <div class="form-floating mb-3">
-                                <input name="profileEmail" value="{{ profileEmail ? profileEmail : me.email }}" required
-                                    type="email" class="form-control" id="floatingEmail" placeholder="Email">
+                                <input name="email" value="{{ userDto.email }}" required type="email"
+                                    class="form-control" id="floatingEmail" placeholder="Email">
                                 <label for="floatingEmail">Email</label>
                             </div>
                         </div>
@@ -106,11 +108,16 @@
 
     <div class="row justify-content-center ">
         <div class="col-lg-8 col-12">
-            <p class="h4 text-center">Post Details</p>
-            <button id="btnDeleteAllPosts" class="btn btn-danger">
-                <i class="fa fa-trash" aria-hidden="true"></i>
-                Delete all posts
-            </button>
+            <p class="h4 text-center mb-3">Post Details</p>
+            <form action="/profile" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="submitwhat" value="deleteallposts">
+                <button data-bs-toggle="modal" data-bs-target="#deleteAllPostsConfirm" type="button"
+                    class="btn btn-danger">
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                    Delete all posts
+                </button>
+            </form>
+
         </div>
     </div>
     <!-- END: Post Details -->
@@ -118,4 +125,27 @@
 
 <!-- Button trigger modal -->
 
+<!-- START: confirmation modal before delete all posts -->
+<div class="modal fade" id="deleteAllPostsConfirm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="deleteAllPostsConfirmTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-center" id="deleteAllPostsConfirmTitle">Confirm Delete All Posts</h5>
+            </div>
+            <div class="modal-body">
+                You are about to delete all your posts. You cann't restore your posts later any way. Confirm to proceed
+                or cancel.
+            </div>
+            <div class="modal-footer">
+                <form action="/profile" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="submitwhat" value="deleteallposts">
+                    <button type="submit" class="btn" data-bs-dismiss="modal">Confirm</button>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END: confirmation modal before delete all posts -->
 {% endblock %}

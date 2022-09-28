@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\Common\Collections\ArrayCollection;
 use DateTime;
+use Rahulstech\Blogging\Dtos\UserDTO;
 
 /**
  * @Entity(repositoryClass="Rahulstech\Blogging\Repositories\UserRepo")
@@ -56,11 +57,19 @@ class User {
 	function getUserId(): int {
 		return $this->userId;
 	}
+
 	/**
 	 * @return string
 	 */
 	function getUsername(): string {
 		return $this->username;
+	}
+
+	/**
+	 * @return string
+	 */
+	function getPasswordHash(): string {
+		return $this->passwordHash;
 	}
 
 	/**
@@ -121,7 +130,7 @@ class User {
 	{
 		$user = new User();
 		if (array_key_exists("userId",$values)) $user->userId = $values["userId"];
-		if (array_key_exists("passwordHash",$values)) $user->passwordHash = User::has_password($values["passwordHash"]);
+		if (array_key_exists("passwordHash",$values)) $user->passwordHash = User::hash_password($values["passwordHash"]);
 		if (array_key_exists("username",$values)) $user->username = $values["username"];
 		if (array_key_exists("firstName",$values)) $user->firstName = $values["firstName"];
 		if (array_key_exists("lastName",$values)) $user->lastName = $values["lastName"];
@@ -131,7 +140,21 @@ class User {
 		return $user;
 	}
 
-	public static function has_password(string $password): string 
+	public static function createFromDTO(UserDTO $dto, ?User $dest=null): User
+	{
+		$user = is_null($dest) ? new User() : $dest;
+		if ($dto->userId > 0) $user->userId = $dto->userId;
+		if (!is_null($dto->username)) $user->username = $dto->username;
+		if (!is_null($dto->passwordHash)) $user->passwordHash = $dto->passwordHash;
+		if (!is_null($dto->password)) $user->passwordHash = User::hash_password($dto->password);
+		if (!is_null($dto->firstName)) $user->firstName = $dto->firstName;
+		if (!is_null($dto->lastName)) $user->lastName = $dto->lastName;
+		if (!is_null($dto->email)) $user->email = $dto->email;
+		if (!is_null($dto->joinedOn)) $user->joinedOn = $dto->joinedOn;
+		return $user;
+	}
+
+	public static function hash_password(string $password): string 
 	{
 		return password_hash($password,PASSWORD_DEFAULT);
 	}
