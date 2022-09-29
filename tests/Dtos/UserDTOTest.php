@@ -20,7 +20,6 @@ class UserDTOTest extends TestCase
             "email" => "email1@domain.com"
         );
         $dto = new UserDTO($values);
-        $this->assertEquals($values["userId"],$dto->userId,"userId not set");
         $this->assertEquals($values["username"],$dto->username,"username not set");
         $this->assertEquals($values["password"],$dto->password,"password not set");
         $this->assertEquals($values["firstName"],$dto->firstName,"firstName not set");
@@ -33,7 +32,7 @@ class UserDTOTest extends TestCase
     {
         $user = User::createNewFromArray(array(
             "userId" => 1,
-            "password" => "pass@123",
+            "passwordHash" => "pass@123",
             "username" => "testuser1",
             "firstName" => "FirstName1",
             "lastName" => "LastName1",
@@ -41,51 +40,62 @@ class UserDTOTest extends TestCase
             "joinedOn" => new DateTime("2022-10-09 12:56:55")
         ));
         $dto = new UserDTO($user);
-        $this->assertEquals($user->getUserId(),$dto->userId,"userId not set");
         $this->assertEquals($user->getUsername(),$dto->username,"username not set");
         $this->assertEquals($user->getPasswordHash(),$dto->passwordHash,"passwordHash not set");
         $this->assertEquals($user->getFirstName(),$dto->firstName,"firstName not set");
         $this->assertEquals($user->getLastName(),$dto->lastName,"lastName not set");
         $this->assertEquals($user->getEmail(),$dto->email,"email not set");
-        $this->assertEquals($user->getJoinedOn(),$dto->joinedOn,"joinedOn not set");
     }
 
     /** @test */
-    public function isValidPassword(): void 
+    public function checkPasswordStrength(): void 
     {
-        $valid = "p@55M0r6";
-        $invalidOnlyLC = "abcdefgh";
-        $invalidOnlyUC = "ABCDEFGH";
-        $invalidOnlyN = "12345678";
-        $invalidOnlyS = "#?!@$%^&*-";
-        $invalidOnlyLen = "aM$2";
-        $invalidNoLC = "ABCDEF#2";
-        $invalidNoUC = "abcdef?5";
-        $invalidNoN = "ABCdefGh&$";
-        $invalidNoS = "ABCdefGh78";
-        $invalidOtherS = "ABCdefGh~2";
+        $dto = new UserDTO(array("password" => "123"));
+        $this->assertNotTrue($dto->checkPasswordStrength(),"password length");
+        $dto = new UserDTO(array("password" => "abcdefgh"));
+        $this->assertNotTrue($dto->checkPasswordStrength(),"password only a-z");
+        $dto = new UserDTO(array("password" => "abcdEFGH"));
+        $this->assertNotTrue($dto->checkPasswordStrength(),"password only a-zA-Z");
+        $dto = new UserDTO(array("password" => "abCD1234"));
+        $this->assertNotTrue($dto->checkPasswordStrength(),"password only a-zA-Z0-9");
+        $dto = new UserDTO(array("password" => "abCD~123"));
+        $this->assertNotTrue($dto->checkPasswordStrength(),"password non accepted symboll: ");
+        $dto = new UserDTO(array("password" => "aBcD#123"));
+        $this->assertTrue($dto->checkPasswordStrength(),"password valid");
+    }
 
-        $dto = new UserDTO(array("password" => $valid));
-        $this->assertTrue($dto->isValidPassword(),"valid check fail");
-        $dto = new UserDTO(array("password" => $invalidOnlyLC));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check only lowercase");
-        $dto = new UserDTO(array("password" => $invalidOnlyUC));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check only uppercase");
-        $dto = new UserDTO(array("password" => $invalidOnlyN));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check only numeric");
-        $dto = new UserDTO(array("password" => $invalidOnlyS));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check only symbolls");
-        $dto = new UserDTO(array("password" => $invalidOnlyLen));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check only length");
-        $dto = new UserDTO(array("password" => $invalidNoLC));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check no lowercase");
-        $dto = new UserDTO(array("password" => $invalidNoUC));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check no uppercase");
-        $dto = new UserDTO(array("password" => $invalidNoN));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check no numeric");
-        $dto = new UserDTO(array("password" => $invalidNoS));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check no symbolls");
-        $dto = new UserDTO(array("password" => $invalidOtherS));
-        $this->assertNotTrue($dto->isValidPassword(),"invalid check other symbolls");
+    
+    /** @test */
+    public function checkEmail(): void 
+    {
+        $dto = new UserDTO(array("email" => "email.12@gmail.co.in"));
+        $this->assertTrue($dto->checkEmail(),"valid email");
+        $dto = new UserDTO(array("email" => ".email@gmail.com"));
+        $this->assertNotTrue($dto->checkEmail(),"username starts with '.'");
+        $dto = new UserDTO(array("email" => "email.@gmail.com"));
+        $this->assertNotTrue($dto->checkEmail(),"username ends with '.'");
+        $dto = new UserDTO(array("email" => "email@.com"));
+        $this->assertNotTrue($dto->checkEmail(),"no host");
+        $dto = new UserDTO(array("email" => "email@gmail"));
+        $this->assertNotTrue($dto->checkEmail(),"no domain");
+        $dto = new UserDTO(array("email" => "email@gmail."));
+        $this->assertNotTrue($dto->checkEmail(),"host ends with '.'");
+    }
+
+    /** @test */
+    public function validateSignUp(): void 
+    {
+        $dto = new UserDTO(array(
+            "password" => "pass@123",
+            "confirmPassword" => "pass#123",
+            "email" => "email@host.com"
+        ));
+        $this->assertNotTrue($dto->validateSignUp(),"password != confirmPassword");
+        $dto = new UserDTO(array(
+            "password" => 'pass@123',
+            "confirmPassword" => 'pass@123',
+            "email" => "email@host.com"
+        ));
+        $this->assertTrue($dto->validateSignUp(),"valid inputs");
     }
 }

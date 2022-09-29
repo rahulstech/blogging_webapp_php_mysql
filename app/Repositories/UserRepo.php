@@ -8,14 +8,37 @@ use Rahulstech\Blogging\Entities\User;
 
 class UserRepo extends EntityRepository
 {
+    public function isUsernameInUse(string $username): bool 
+    {
+        $query = $this->getEntityManager()->createQueryBuilder()
+                    ->select("COUNT(u.userId) AS nUsers")
+                    ->from(User::class,"u")
+                    ->where("u.username = :username")
+                    ->setParameter("username",$username)
+                    ->getQuery();
+        return $query->getSingleScalarResult() != 0;
+    }
+
+    public function isEmailInUse(string $email): bool 
+    {
+        $query = $this->getEntityManager()->createQueryBuilder()
+                    ->select("COUNT(u.userId) AS nUsers")
+                    ->from(User::class,"u")
+                    ->where("u.email = :email")
+                    ->setParameter("email",$email)
+                    ->getQuery();
+        return $query->getSingleScalarResult() !== 0;
+    }
+
     public function save(User $user): bool {
+        $oldId = $user->getUserId();
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
-        return $user->getUserId() > 0;
+        $newId = $user->getUserId();
+        return $oldId > 0 ? $oldId === $newId  : $newId > 0;
     }
 
     public function getByUsername(string $username): ?User {
-        $dql = "SELECT u FROM ".User::class." u WHERE u.username = :username";
         $query = $this->createQueryBuilder("u")
                     ->leftJoin("u.myPosts","p")
                     ->where("u.username = :username")

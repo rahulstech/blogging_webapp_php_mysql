@@ -14,7 +14,8 @@ class TwigFunctions extends AbstractExtension
     {
         return array(
             new TwigFunction("fullname",[$this,"fullname"]),
-            new TwigFunction("currenturlchangelastpath",[$this,"currenturlchangelastpath"]),
+            new TwigFunction("buildpath",[$this,"buildpath"]),
+            new TwigFunction("appendquery",[$this,"appendquery"]),
             new TwigFunction("formatprettydateshort",[$this,"formatprettydateshort"]),
             new TwigFunction("formatprettydatetimeshort",[$this,"formatprettydatetimeshort"])
         );
@@ -46,25 +47,8 @@ class TwigFunctions extends AbstractExtension
        return $path;
     }
 
-    public function currenturlchangelastpath(string $newvalue, bool $appendquery=true): string 
+    public function buildpath(string $format, ...$values): string 
     {
-        $currenturl = $_SERVER["REQUEST_URI"];
-        $path = parse_url($currenturl,PHP_URL_PATH);
-        $segments = explode("/",$path);
-        $nsegments = count($segments);
-        for($i=--$nsegments; $i>=0; $i--)
-        {
-            $s = $segments[$i];
-            unset($segments[$i]);
-            if ("" !== $s) break;
-        }
-        $path = implode("/",$segments);
-        $path = "$path/$newvalue";
-        if ($appendquery)
-        {
-            $query = parse_url($currenturl,PHP_URL_QUERY);
-            $path = "$path?$query";
-        }
-        return $path;
+        return sprintf($format, ...$values);
     }
 }

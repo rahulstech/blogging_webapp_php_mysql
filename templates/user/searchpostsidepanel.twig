@@ -7,6 +7,6 @@
 </form>
 <div class="list-group">
     {% for post in sidepanelposts %}
-    <a href="{{currenturlchangelastpath(post.postId)}}" class="list-group-item list-group-item-action {{currentpost.postId == post.postId ? "active" : ""}} ">{{post.title}}</a>
+    <a href="{{appendquery(buildpath(sidepanelpostspostpath,post.postId))}}" class="list-group-item list-group-item-action {{currentpost.postId == post.postId ? "active" : ""}} ">{{post.title}}</a>
     {% endfor %}
 </div>

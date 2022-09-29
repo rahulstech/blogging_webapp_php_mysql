@@ -7,13 +7,13 @@
 {% block content %}
 
 <div class="container-fluid ">
-    <form class="pb-3" action="" method="POST" enctype="application/x-www-form-urlencoded">
+    <form class="pb-3" action="" method="POST" enctype="multipart/form-data">
 
         <div class="row mb-3 justify-content-center">
             <div class="col-lg-10 col-12">
                 <div class="form-floating">
-                    <input name="postTitle" required type="text" class="form-control" id="floatingTitle"
-                        value="{{post.title ?? post.title}}"
+                    <input name="title" required type="text" class="form-control" id="floatingTitle"
+                        value="{{postDto.title}}"
                         placeholder="Title">
                     <label for="floatingTitle">Title</label>
                 </div>
@@ -23,8 +23,8 @@
         <div class="row mb-3 justify-content-center">
             <div class="col-lg-10 col-12">
                 <div class="form-floating">
-                    <input name="postShortDescription" required type="text" class="form-control" id="floatingShortDescription"
-                        value="{{post.shortDescription ?? post.shortDescription}}"
+                    <input name="shortDescription" type="text" class="form-control" id="floatingShortDescription"
+                        value="{{postDto.shortDescription}}"
                         placeholder="Title">
                     <label for="floatingShortDescription">Short Description</label>
                 </div>
@@ -34,14 +34,11 @@
         <div class="row mb-3 justify-content-center">
             <div class="col-lg-10 col-12">
                 <label for="textContent" class="form-label">Your Post</label>
-                <textarea name="saveTextContent" required class="form-control" id="textContent" rows="15">{{post.textContent ?? post.textContent}}</textarea>
+                <textarea name="textContent" class="form-control" id="textContent" rows="15">{{postDto.textContent}}</textarea>
             </div>
         </div>
 
         <div class="row justify-content-end">
-            <div class="col-2">
-                <a href="" type="submit" class="btn px-4">Discard</a>
-            </div>
             <div class="col-2">
                 <button class="btn btn-success mb-3" type="submit"><i class="fa fa-floppy-o me-2" ></i>Save</button>
             </div>

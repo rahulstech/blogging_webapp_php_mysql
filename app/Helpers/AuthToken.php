@@ -2,9 +2,12 @@
 
 namespace Rahulstech\Blogging\Helpers;
 
+use DateTime;
+
 class AuthToken
 {
     private int $userId;
+    private DateTime $expire;
 
     public function __construct(array $values=array())
     {
@@ -25,6 +28,16 @@ class AuthToken
         return $this->userId;
     }
 
+    public function setExpire(DateTime $expire): AuthToken
+    {
+        $this->expire = $expire;
+        return $this;
+    }
+
+    public function getExpire(): DateTime
+    {
+        return $this->expire;
+    }
     public function encode(): string
     {
         $value = array(

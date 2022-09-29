@@ -7,6 +7,7 @@ use Rahulstech\Blogging\Entities\User;
 use Rahulstech\Blogging\Repositories\UserRepo;
 use Rahulstech\Blogging\Tests\DatabaseTestCase;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use DateTime;
 
 class UserRepoTest extends DatabaseTestCase
 {
@@ -48,41 +49,39 @@ class UserRepoTest extends DatabaseTestCase
         $this->assertNull($user);
     }
 
-    /** 
-     * @expectedException UniqueConstraintViolationException
-    */
+    /**@test */
     public function createUserWithExistingUsername(): void
     {
         $user = User::createNewFromArray(array(
             "username" => "testuser1"
         ));
+        $this->expectException(UniqueConstraintViolationException::class);
         $this->userRepo->save($user);
     }
 
     /** @test */
     public function updateExistingUser(): void
     {
+        $user = $this->getEntityManager()->getReference(User::class,1);
         $user = User::createNewFromArray(array(
-            "userId" => 1,
             "username" => "testuser1_updated",
             "passwordHash" => '$2y$10$cF2PxqnG00nr98OEiSNEre.ARkQAxDFq/n13pjzs4vr37rCEQzvvi',
             "firstName" => "FirstName1",
             "lastName" => "LastName1",
             "email" => "email1@domain.com"
-        ));
+        ),$user);
         $updated = $this->userRepo->save($user);
         $this->assertTrue($updated);
     }
 
-    /** 
-     * @expectedException Doctrine\DBAL\Exception\UniqueConstraintViolationException 
-     */
+    /** @test */
     public function updateToExistingUsername(): void
     {
+        $user = $this->getEntityManager()->getReference(User::class,1);
         $user = User::createNewFromArray(array(
-            "userId" => 2,
-            "username" => "testuser1"
-        ));
+            "username" => "testuser2"
+        ),$user);
+        $this->expectException(UniqueConstraintViolationException::class);
         $this->userRepo->save($user);
     }
 
@@ -115,5 +114,48 @@ class UserRepoTest extends DatabaseTestCase
         $user = $this->userRepo->find(2);
         $this->assertNotNull($user->getMyPosts(), "no post loadded");
         $this->assertEquals(2,count($user->getMyPosts()),"required number of posts not loaded");
+    }
+
+    /** @test*/
+    public function nonUniqueEmailOnCreate(): void 
+    {
+        $user = User::createNewFromArray(array(
+            "username" => "user1",
+            "firstName" => "FirstName11",
+            "lastName" => "LastName11",
+            "email" => "email1@domain.com",
+            "passwordHash" => "pass$456"
+        ));
+        $this->expectException(UniqueConstraintViolationException::class);
+        $this->userRepo->save($user);
+    }
+
+    /**@test */
+    public function nonUniqueEmailOnUpdate(): void 
+    {
+        $user = $this->getEntityManager()->getReference(User::class,1);
+        $user = User::createNewFromArray(array(
+            "email" => "email2@domain.com"
+        ),$user);
+        $this->expectException(UniqueConstraintViolationException::class);
+        $this->userRepo->save($user);
+    }
+
+    /** @test */
+    public function isUsernameInUse(): void 
+    {
+        $inuse = $this->userRepo->isUsernameInUse("testuser1");
+        $this->assertTrue($inuse,"existing username check");
+        $inuse = $this->userRepo->isUsernameInUse("nonexistingusername");
+        $this->assertNotTrue($inuse,"non existing username check");
+    }
+
+    /** @test */
+    public function isEmailInUse(): void 
+    {
+        $inuse = $this->userRepo->isEmailInUse("email1@domain.com");
+        $this->assertTrue($inuse,"existing email check");
+        $inuse = $this->userRepo->isUsernameInUse("nonexistingemail@domain.com");
+        $this->assertNotTrue($inuse,"non existing email check");
     }
 }

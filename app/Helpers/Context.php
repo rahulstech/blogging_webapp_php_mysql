@@ -8,7 +8,7 @@ use Traversable;
 use IteratorAggregate;
 use InvalidArgumentException;
 
-class Context implements Countable, IteratorAggregate
+class Context implements Countable
 {
     /**
      * @var array<string,mixed>
@@ -26,17 +26,6 @@ class Context implements Countable, IteratorAggregate
         $old = $this->exists($key) ? $map[$key] : null;
         $this->map[$key] = $value;
         return $old;
-    }
-
-    public function append(string $key, mixed $value): void 
-    {
-        if (!$this->exists($key))
-        {
-            $this->put($key,array($value));
-            return;
-        }
-        if (!is_array($this->get($key))) throw new InvalidArgumentException("value for given key is not an array");
-        array_push($this->map[$key],$value);
     }
 
     public function get(string $key, mixed $default=null): mixed 
@@ -61,24 +50,7 @@ class Context implements Countable, IteratorAggregate
         {
             $old = $this->get($key);
             unset($this->map[$key]);
-            return $key;
-        }
-        return null;
-    }
-
-    public function removeItem(string $key, int $what): mixed 
-    {
-        if ($this->exists($key))
-        {
-            $a = $this->get($key);
-            if (!is_array($a)) throw new InvalidArgumentException("$key is not an array, use remove(string)");
-            if ($what >= 0 && $what < count($a))
-            {
-                $old = $a[$what];
-                unset($this->map[$key][$what]);
-                return $old;
-            }
-            throw new InvalidArgumentException("no item found @$what");
+            return $old;
         }
         return null;
     }
@@ -98,14 +70,6 @@ class Context implements Countable, IteratorAggregate
     public function clear(): void 
     {
         $this->map = array();
-    }
-
-    /**
-     * @return Traversable
-     */
-    public function getIterator(): Traversable 
-    {
-        return new ContextIterator($this->map);
     }
 
     /**

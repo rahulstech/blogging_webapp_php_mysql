@@ -39,7 +39,7 @@ class User {
 	/** @Column(length=100) */
 	private string $lastName;
 
-	/** @Column() */
+	/** @Column(unique=true) */
 	private string $email;
 
 	/** @Column() */
@@ -122,13 +122,14 @@ class User {
 
 	private function __construct()
 	{
+		$this->userId = 0;
 		$this->joinedOn = new DateTime();
 		$this->myPosts = new ArrayCollection();
 	}
 	
-	public static function  createNewFromArray(array $values): User
+	public static function  createNewFromArray(array $values,?User $dest=null): User
 	{
-		$user = new User();
+		$user = null !== $dest ? $dest : new User();
 		if (array_key_exists("userId",$values)) $user->userId = $values["userId"];
 		if (array_key_exists("passwordHash",$values)) $user->passwordHash = User::hash_password($values["passwordHash"]);
 		if (array_key_exists("username",$values)) $user->username = $values["username"];
@@ -142,15 +143,13 @@ class User {
 
 	public static function createFromDTO(UserDTO $dto, ?User $dest=null): User
 	{
-		$user = is_null($dest) ? new User() : $dest;
-		if ($dto->userId > 0) $user->userId = $dto->userId;
+		$user = null===$dest ? new User() : $dest;
 		if (!is_null($dto->username)) $user->username = $dto->username;
 		if (!is_null($dto->passwordHash)) $user->passwordHash = $dto->passwordHash;
 		if (!is_null($dto->password)) $user->passwordHash = User::hash_password($dto->password);
 		if (!is_null($dto->firstName)) $user->firstName = $dto->firstName;
 		if (!is_null($dto->lastName)) $user->lastName = $dto->lastName;
 		if (!is_null($dto->email)) $user->email = $dto->email;
-		if (!is_null($dto->joinedOn)) $user->joinedOn = $dto->joinedOn;
 		return $user;
 	}
 

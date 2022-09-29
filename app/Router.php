@@ -5,6 +5,7 @@ namespace Rahulstech\Blogging;
 use Klein\Klein;
 use Klein\Route;
 use Rahulstech\Blogging\Helpers\Context;
+use Rahulstech\Blogging\Services\AuthService;
 class Router
 {
     private static ?Klein $klein = null;
@@ -19,6 +20,7 @@ class Router
             $klein->onHttpError(function($code,$router){}); // TODO: implement http error handler
         
             Router::$klein = $klein;
+            Router::registerServices();
             Router::addDefaultRoutes();
             Router::loadRoutes();
         }
@@ -41,8 +43,18 @@ class Router
     private static function addDefaultRoutes(): void 
     {
         $klein = Router::$klein;
-        $klein->respond(function($req,$res,$service){
+        $klein->respond(array("GET","POST"),"*",function($req,$res,$service){
             $service->context = new Context();
+        });
+    }
+
+    private static function registerServices(): void 
+    {
+        $klein = Router::$klein;
+        $service = $klein->service();
+        $app = $klein->app();
+        $app->register("authservice",function() use($service){
+            return new AuthService($service);
         });
     }
 

@@ -8,12 +8,26 @@ use Rahulstech\Blogging\Entities\User;
 
 class PostRepo extends EntityRepository
 {
+    private ?int $lastId = null;
+
     public function save(Post $post): bool
     {
+        $oldId = $post->getPostId();
         $em = $this->getEntityManager();
         $em->persist($post);
         $em->flush();
-        return $post->getPostId() > 0;
+        $newId = $post->getPostId();
+        if ($oldId === 0 ? $newId > 0 : $oldId === $newId)
+        {
+            $this->lastId = $newId;
+            return true;
+        }
+        return false;
+    }
+
+    public function getLastId(): ?int
+    {
+        return $this->lastId;
     }
 
     /**
