@@ -1,22 +1,36 @@
 {% extends "layout.twig" %}
 
+{% block styles %}
+
+<link rel="stylesheet" href="/public/styles/sidebar.css"/>
+
+{% endblock %}
+
+{% set hasSidepanelPosts = sidepanelposts is not empty %}
+
 {% block header %}
+{% set showLeftSidebarToggle = hasSidepanelPosts %}
 {% include "user/navbar.twig" %}
 {% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        {% if me is defined %}
-        <div class="col-lg-3 col-4">
-            {% include "user/searchpostsidepanel.twig" %}
-        </div>
-        {% endif %}
 
-        <div class="col-lg-9 col-8">
+{% block content %}
+
+
+<div class="d-flex wrapper">
+
+    {% if hasSidepanelPosts %}
+    <div class="sidebar-wrapper">
+        {% include "user/searchpostsidepanel.twig" %}
+    </div>
+    {% endif %}
+
+    <div class="page-content-wrapper">
+        <div class="container-fluid">
+            <!-- show content -->
             {% include "user/postslist.twig" %}
         </div>
     </div>
 </div>
-</div>
+
 {% endblock %}

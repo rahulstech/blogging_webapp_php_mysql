@@ -1,0 +1,56 @@
+{% extends "layout.twig" %}
+
+{% block styles %}
+
+<link rel="stylesheet" href="/public/styles/sidebar.css">
+
+{% endblock %}
+
+{% block header %}
+{% set showLeftSidebarToggle = true %}
+{% include "user/navbar.twig" %}
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex wrapper">
+
+    <div class="sidebar-wrapper">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">About
+                <b>{{fullname(creator.firstName,creator.lastName)}}</b></a>
+            <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Posts</a>
+            {% if me == creator %}
+            <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Edit Personal
+                Details</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="page-content-wrapper">
+
+
+        {% if section == "creatorandposts" %}
+
+        <div class="container-fluid">
+            <div class="text-center mb-3">
+                <p>
+                    <span class="display-5">{{fullname(creator.firstName,creator.lastName)}}</span>
+                    <small class="text-muted">since {{formatprettydateshort(creator.joinedOn)}}</small>
+                </p>
+                <p>
+                    <i class="fa fa-envelope"></i>
+                    <a href="mailto:{{creator.email}}" target="_blank" class="text-secondary">{{creator.email}}</a>
+                </p>
+            </div>
+            {% include "user/postslist.twig" %}
+        </div>
+
+        {% endif %}
+    </div>
+
+
+
+</div>
+
+{% endblock %}

@@ -13,15 +13,4 @@ class TwigFunctionsTest extends TestCase
     {
         $this->tfunc = new TwigFunctions();
     }
-
-    /** @test */
-    public function currenturlchangelastpath(): void  
-    {
-        $_SERVER["REQUEST_URI"] = "http://localhost/example/last?foo=bar&hello=world";
-        $newvalue = "newlast";
-        $path = $this->tfunc->currenturlchangelastpath($newvalue);
-        $this->assertEquals("/example/$newvalue?foo=bar&hello=world",$path,"last path not replaced properly");
-        $path = $this->tfunc->currenturlchangelastpath($newvalue,false);
-        $this->assertEquals("/example/$newvalue",$path,"query not appended");
-    }
 }

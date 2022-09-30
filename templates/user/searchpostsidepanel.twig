@@ -1,12 +1,11 @@
-
 <form action="" method="GET" enctype="application/x-www-form-urlencoded" class="d-flex mb-3">
-    <input class="form-control me-2" 
-            name="searchbytitle" value="{{__GET["searchbytitle"]}}" type="search"
-            autocomplete="off" placeholder="Search by title" aria-label="Search">
+    <input class="form-control me-2" name="searchbytitle" value="{{__GET[" searchbytitle"]}}" type="search"
+        autocomplete="off" placeholder="Search by title" aria-label="Search">
     <button type="submit" class="btn btn-outline-primary"><i class="fa fa-search" aria-hidden="true"></i></button>
 </form>
 <div class="list-group">
     {% for post in sidepanelposts %}
-    <a href="{{appendquery(buildpath(sidepanelpostspostpath,post.postId))}}" class="list-group-item list-group-item-action {{currentpost.postId == post.postId ? "active" : ""}} ">{{post.title}}</a>
+    <a href="{{appendquery(buildpath(sidepanelpostspostpath,post.postId))}}"
+        class="list-group-item list-group-item-action {{currentpost.postId == post.postId ? "active" }} ">{{post.title}}</a>
     {% endfor %}
 </div>

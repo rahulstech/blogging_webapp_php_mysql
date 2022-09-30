@@ -7,40 +7,54 @@
 
 {% endblock %}
 
+{% block styles %}
+
+<link rel="stylesheet" href="/public/styles/sidebar.css"/>
+
+{% endblock %}
+
+{% set hasSidepanelPosts = sidepanelposts is not empty %}
+
 {% block header %}
+{% set showLeftSidebarToggle = hasSidepanelPosts %}
 {% include "user/navbar.twig" %}
 {% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-3 col-4">
-            {% include "user/searchpostsidepanel.twig" %}
-        </div>
-        <div class="col-lg-9 col-8">
-            <div class="container-fluid">
-                <!-- 
-                actions buttons for current post.
-                show this if user is viewing own post
-                -->
-                {% if me == currentpost.creator %}
-                <div class="container-fluid d-flex justify-content-end mb-3">
-                    <a href="/post/edit/{{currentpost.postId}}" class="btn btn-primary me-2">
-                        <i class="fa fa-pencil"></i>
-                        Edit
-                    </a>
-                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePostConfirm">
-                        <i class="fa fa-trash"></i>
-                        Delete
-                    </button>
-                </div>
-                {% endif %}
 
-                <!-- show content -->
-                {% include "user/postcontent.twig" %}
+{% block content %}
+
+<div class="d-flex wrapper">
+
+    {% if hasSidepanelPosts %}
+    <div class="sidebar-wrapper">
+        {% include "user/searchpostsidepanel.twig" %}
+    </div>
+    {% endif %}
+
+    <div class="page-content-wrapper">
+        <div class="container-fluid">
+            <!-- 
+            actions buttons for current post.
+            show this if user is viewing own post
+            -->
+            {% if me == currentpost.creator %}
+            <div class="container-fluid d-flex justify-content-end mb-3">
+                <a href="/post/{{currentpost.postId}}/edit" class="btn btn-primary me-2">
+                    <i class="fa fa-pencil"></i>
+                    Edit
+                </a>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePostConfirm">
+                    <i class="fa fa-trash"></i>
+                    Delete
+                </button>
             </div>
+            {% endif %}
+
+            <!-- show content -->
+            {% include "user/postcontent.twig" %}
         </div>
     </div>
+    
 </div>
 
 <!-- START: confirmation modal before delete all posts -->
@@ -57,7 +71,7 @@
                 or cancel.
             </div>
             <div class="modal-footer">
-                <a href="/post/delete/{{currentpost.postId}}" class="btn"
+                <a href="/post/{{currentpost.postId}}/delete" class="btn"
                     >Confirm</a>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
             </div>
@@ -65,5 +79,6 @@
     </div>
 </div>
 <!-- END: confirmation modal before delete all posts -->
+
 
 {% endblock %}

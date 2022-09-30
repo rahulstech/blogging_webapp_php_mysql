@@ -1,24 +1,25 @@
 <?php
-use Rahulstech\Blogging\Dtos\UserDTO;
-use Rahulstech\Blogging\Dtos\PostDTO;
-
-define("KEY_CPWD_OLDPASSWORD","oldpassword");
-define("KEY_CPWD_USERNAME","username");
-
-define("KEY_PROGRESS","cpwdpgrss");
-define("PROGRESS_NOT_VERIFIED","notverified");
-define("PROGRESS_VERIFIED","verified");
-
-
-define("KEY_POSTPATH_POSTSLIST","postslistpostpath");
-define("KEY_POSTPATH_SIDEPANELPOSTS","sidepanelpostspostpath");
 
 use Klein\App;
 use Klein\Request;
 use Klein\ServiceProvider;
+
+define("KEY_SECTION","section");
+define("SECTION_CREATORANDPOSTS","creatorandposts");
+define("KEY_USERNAME","username");
+define("SECTION_OLDPASSWORD","oldpassword");
+define("SECTION_USERNAME","username");
+define("KEY_CHECKKEY","checkkey");
+define("KEY_POSTPATH_POSTSLIST","postslistpostpath");
+define("KEY_POSTPATH_SIDEPANELPOSTS","sidepanelpostspostpath");
+
 use Klein\AbstractResponse;
 use Rahulstech\Blogging\Router;
+use Rahulstech\Blogging\Dtos\PostDTO;
+use Rahulstech\Blogging\Dtos\UserDTO;
 use Rahulstech\Blogging\ViewTemplate;
+use Rahulstech\Blogging\Helpers\Helper;
+use Rahulstech\Blogging\Helpers\Session;
 use Rahulstech\Blogging\DatabaseBootstrap;
 
 $router = Router::getRouter();
@@ -42,29 +43,19 @@ function viewpost(Request $req,AbstractResponse $res, ServiceProvider $service, 
     $post = $postRepo->find($id);
     if (null===$post)
     {
-        $res->code(404);
-        $res->send();
-        return;
+        Router::getRouter()->abort(404);
     }
     $context->put("currentpost",$post);
+    $context->put("title",$post->getTitle());
     $sidepanelposts = array();
     
     switch($page)
     {
         case "recent":
             {
-                $context->put(KEY_POSTPATH_SIDEPANELPOSTS,"/post/recent/%d");
+                $context->put(KEY_POSTPATH_SIDEPANELPOSTS,"/posts/recent/%d");
                 $sidepanelposts = $searchbytitle===null ? $postRepo->getLatestPosts() 
                                     : $postRepo->getLatestPostsTitleContains($searchbytitle);
-            }
-        break;
-        case "mypost":
-            {
-                if (checkLoggedInOrRedirect($res,$service)) return;
-                $me = $context->get("me");
-                $context->put(KEY_POSTPATH_SIDEPANELPOSTS,"/post/mypost/%d");
-                $sidepanelposts = $searchbytitle===null ? $me->getMyPosts()
-                                    : $postRepo->getCreatorPostsTitleContains($me,$searchbytitle);
             }
         break;
         default:
@@ -94,25 +85,32 @@ $router->respond(array("GET","POST"),"*",function(Request $req,AbstractResponse 
  */
 
 $router->get("/?",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
+    $searchbytitle = $req->paramsGet()->get("searchbytitle");
     $recentposts = DatabaseBootstrap::getPostRepo()->getLatestPosts();
     $context = $service->context;
     $context->put("postslist",$recentposts);
-    $context->put(KEY_POSTPATH_POSTSLIST,"/post/recent/%d");
+    $context->put(KEY_POSTPATH_POSTSLIST,"/posts/recent/%d");
+    $context->put("title","Home");
     if ($context->exists("me"))
     {
-        $context->put("sidepanelposts",$context->get("me")->getMyPosts());
-        $context->put(KEY_POSTPATH_SIDEPANELPOSTS,"/post/mypost/%d");
+        $me = $context->get("me");
+        $sidepanelposts = $searchbytitle===null ? $me->getMyPosts() 
+                            : DatabaseBootstrap::getPostRepo()->getCreatorPostsTitleContains($me,$searchbytitle);
+        $context->put("sidepanelposts",$sidepanelposts);
+        $context->put(KEY_POSTPATH_SIDEPANELPOSTS,"/profile/".$me->getUsername()."/post/%d");
+        $context->put("title","Home | ".$me->getFirstName()." ".$me->getLastName());
+        $res->noCache();
     }
     return ViewTemplate::render("user/home.twig",$service->context->toArray());
 });
 
-$router->respond(array("GET","POST"), "/login",function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app){
-    
+$router->respond(array("GET","POST"), "/login",function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app) use($router){
     // user logged in, redirect to home page
     $context = $service->context;
     if ($context->exists("me"))
     {
         $res->redirect("/");
+        return;
     }
 
     // user submitted login form
@@ -125,23 +123,28 @@ $router->respond(array("GET","POST"), "/login",function(Request $req, AbstractRe
             $authservice = $app->authservice();
             if (!$authservice->addAuthToken($user))
             {
-                $res->code(500);
-                $res->body("Fail to login due to server error, please try again");
-                $res->send();
-                return;
+                $router->abort(500);
             }
             else 
             {
                 $res->redirect("/");
+                return;
             }
         }
         $context->put("userDto",$userDto);
     }
+    $context->put("title","Log In");
     return ViewTemplate::render("user/login.twig",$service->context->toArray());
 });
 
-$router->respond(array("GET","POST"),"/signup",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
+$router->respond(array("GET","POST"),"/signup",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app) use($router){
     $context = $service->context;
+    if ($context->exists("me"))
+    {
+        $res->redirect("/");
+        return;
+    }
+
     if ($req->method("POST"))
     {
         $userDto = new UserDTO($_POST);
@@ -162,142 +165,169 @@ $router->respond(array("GET","POST"),"/signup",function(Request $req,AbstractRes
                 $saved = DatabaseBootstrap::getUserRepo()->save($user);
                 if (!$saved)
                 {
-                    $res->code(500);
-                    $res->body("Fail to save user due to internal server error please try again");
-                    $res->send();
-                    return;
+                    $router->abort(500);
                 }
                 else 
                 {
                     $authservice = $app->authservice();
                     if (!$authservice->addAuthToken($user))
                     {
-                        $res->code(500);
-                        $res->body("some server side error occured while authenticating, please login again");
-                        $res->send();
-                        return;
+                        $router->abort(500);
                     }
                     else 
                     {
                         $res->redirect("/");
+                        return;
                     }
                 }
             }
         }
         $context->put("userDto",$userDto);
     }
+    $context->put("title","Sign Up");
     return ViewTemplate::render("user/signup.twig",$context->toArray());
 });
 
 
-
-
 # restricted resources: requires login
 
-$router->respond(array("GET","POST"),"/forgetpassword",
-            function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app){
-                // check username provided
-                $context = $service->context;
-                $userDto = new UserDTO($_POST);
-                session_start();
-                if (!isset($_SESSION[KEY_CPWD_USERNAME]))
+$router->respond(array("GET","POST"),"/[forgetpassword|changepassword:action]", 
+        function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app) use($router){
+            $context = $service->context;
+            $action = $req->paramsNamed()->get("action");
+            $orgcheckkey = $req->paramsPost()->get(KEY_CHECKKEY);
+            $userDto = new UserDTO($_POST);
+            $userRepo = DatabaseBootstrap::getUserRepo();
+            Session::start();
+
+            if (null!==$orgcheckkey)
+            {
+                $res->noCache();
+                // changed password is submitted, save it and redirect to login
+                $expectedcheckkey = Session::get(KEY_CHECKKEY);
+                if (null!==$expectedcheckkey && $orgcheckkey===$expectedcheckkey)
                 {
-                    // verify with current password not done
-                    $context->put("section","username");
-                    $_SESSION[KEY_CPWD_USERNAME] = false;
-                }
-                else 
-                {
-                    $me = $context->get("me");
-                    if (!$_SESSION[KEY_CPWD_USERNAME])
+                    Session::remove(KEY_CHECKKEY);
+                    // get the user - 
+                    // 1. action is changepassword then user is loggedin get it from context
+                    // 2. action is forgetpassword then query db by username.
+                    $user = null;
+                    if ("forgetpassword" === $action)
                     {
-                        // old password entered, verify it
-                        if ($userDto->verifyPassword($me))
+                        $username = $req->cookies()->get(KEY_USERNAME);
+                        if (null===$username)
                         {
-                            // verified
-                            $_SESSION[KEY_CPWD_USERNAME] = true;
+                            // cookie expired user need to reauthticate with username
+                            $context->put(KEY_SECTION,SECTION_USERNAME);
                         }
                         else
                         {
-                            // not verfied, show password field to reenter
-                            $context->put("section","username");
+                            // get user by username. no nullity check needed because
+                            // user existance was checked before
+                            $user = $userRepo->getByUsername($username);
                         }
                     }
                     else 
                     {
-                        if ($userDto->validateChangePassword())
+                        // get the current loggin uesr, no nullity check needed because
+                        // logged in status chcked before
+                        $user = $context->get("me");
+                    }
+                    if ($userDto->validateChangePassword())
+                    {
+                        $updateduser = $userDto->toUser($user);
+                        if (!$userRepo->save($updateduser))
                         {
-                            unset($_SESSION[KEY_CPWD_USERNAME]);
-                            $updateduser = $userDto->toUser($me);
-                            $updated = DatabaseBootstrap::getUserRepo()->save($updateduser);
-                            if (!$updated)
-                            {
-                                $res->code(500);
-                                $res->body("unnable to complete your request, please try again");
-                                $res->send();
-                            }
-                            else 
-                            {
-                                $res->redirect("/");
-                            }
+                            $router->abort(500);
+                        }
+                        else 
+                        {
+                            // user password changed successfully, username cookie no longer needed, remove it
+                            $res->cookie(key:KEY_USERNAME,expiry:0,path:"/forgetpassword"); 
+                            $router->app()->authservice()->removeAuthToken();
+                            $res->redirect("/login");
+                            return;
                         }
                     }
-                }
-                return ViewTemplate::render("user/changepassword.twig",$context->toArray());
-            });
-
-$router->respond(array("GET","POST"),"/changepassword", 
-        function(Request $req, AbstractResponse $res, ServiceProvider $service, App $app){
-            $progress = $req->param(KEY_PROGRESS);
-            $context = $service->context;
-            $userDto = new UserDTO($_POST);
-            
-            $context->put("section","oldpassword");
-            $context->put(KEY_PROGRESS,PROGRESS_NOT_VERIFIED);
-            if(null!==$progress && ""!==$progress) 
-            {
-                $me = $context->get("me");
-                if (PROGRESS_NOT_VERIFIED===$progress)
-                {
-                    // old password entered, verify it
-                    if ($userDto->verifyPassword($me))
+                    else
                     {
-                        // verified
-                        $context->remove("section");
-                        $context->put(KEY_PROGRESS,PROGRESS_VERIFIED);
+                        Session::put(KEY_CHECKKEY,Helper::randomstring(32));
+                        $context->put(KEY_CHECKKEY,Session::get(KEY_CHECKKEY));
+                    }
+                }
+            }
+            else 
+            {
+                if ("forgetpassword" === $action)
+                {
+                    // handle forget password.
+                    // forget password is handled by username authentication
+
+                    if ($req->method("POST"))
+                    {
+                        // submitted username for authtication
+                        $user = $userRepo->getByUsername($userDto->username);
+                        if ($userDto->verifyUserExists($user))
+                        {
+                            $res->cookie(KEY_USERNAME,$userDto->username,time()+300,"/forgetpassword"); // keep the cookie upto 5 minutes
+                            Session::put(KEY_CHECKKEY,Helper::randomstring(32));
+                            $context->put(KEY_CHECKKEY,Session::get(KEY_CHECKKEY));
+                        }
+                        else
+                        {
+                            $context->put(KEY_SECTION,SECTION_USERNAME);
+                        }
+                    }
+                    else
+                    {
+                        $context->put(KEY_SECTION,SECTION_USERNAME);
                     }
                 }
                 else 
                 {
-                    if ($userDto->validateChangePassword())
+                    // handle change password
+                    // change password is handled by password authentication
+                    // user must be logged in to change password
+
+                    if (checkLoggedInOrRedirect($res,$service)) return;
+
+                    $me = $context->get("me");
+                    if ($req->method("POST") && $userDto->verifyPassword($me))
                     {
-                        $updateduser = $userDto->toUser($me);
-                        $updated = DatabaseBootstrap::getUserRepo()->save($updateduser);
-                        if (!$updated)
-                        {
-                            $res->code(500);
-                            $res->body("unnable to complete your request, please try again");
-                            $res->send();
-                            return;
-                        }
-                        else 
-                        {
-                            $res->redirect("/profile");
-                        }
+                        // submitted current password for authtication
+                        Session::put(KEY_CHECKKEY,Helper::randomstring(32));
+                        $context->put(KEY_CHECKKEY,Session::get(KEY_CHECKKEY));
+                    }
+                    else
+                    {
+                        $context->put(KEY_SECTION,SECTION_OLDPASSWORD);
                     }
                 }
             }
+            $context->put("userDto",$userDto);
             return ViewTemplate::render("user/changepassword.twig",$context->toArray());
         });
 
 
-$router->with("/profile",function($router){
+$router->with("/profile/[:username]",function($router){
     
-    $router->respond(array("GET","POST"),"/?",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
-        if (checkLoggedInOrRedirect($res,$service)) return;
+    $router->respond(array("GET","POST"),"/?",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app) use($router){
+        $username = $req->paramsNamed()->get("username");
         $context = $service->context;
-        $me = $context->get("me");
-        $userDto = new UserDTO($me);
+        $userRepos = DatabaseBootstrap::getUserRepo();
+        $me = $context->get("me"); // nullable if not logged in
+        $creator = null!==$me && $me->getUsername()===$username ? $me : $userRepos->getByUsername($username);
+        if (null===$creator)
+        {
+            $router->abort(404);
+        }
+        $context->put(KEY_SECTION,SECTION_CREATORANDPOSTS);
+        $context->put(KEY_POSTPATH_POSTSLIST,"/profile/$username/post/%d");
+        $context->put("creator",$creator);
+        $context->put("postslist",$creator->getMyPosts());
+        $context->put(KEY_POSTPATH_POSTSLIST,"/profile/$username/post/%d");
+        $context->put("title", "Profile | ".Helper::fullname($creator->getFirstName(),$creator->getLastName()));
+        /*$userDto = new UserDTO($me);
         if ($req->method("POST"))
         {
             $submitwhat = $req->paramsPost()->get("submitwhat");
@@ -306,10 +336,7 @@ $router->with("/profile",function($router){
                 $removed = DatabaseBootstrap::getPostRepo()->removeAllPostsOfCreator($me);
                 if (!$removed)
                 {
-                    $res->code(500);
-                    $res->body("Fail to remove all post due to server side error, please try again");
-                    $res->send();
-                    return;
+                    $router->abort(500);
                 }
                 else
                 {
@@ -323,63 +350,25 @@ $router->with("/profile",function($router){
                 DatabaseBootstrap::getUserRepo()->save($updatedme);
             }
         }
-        $context->put("userDto",$userDto);
-        return ViewTemplate::render("user/myprofile.twig",$context->toArray());
+        $context->put("userDto",$userDto);*/
+        return ViewTemplate::render("user/profile.twig",$context->toArray());
     });
 
-    $router->get("/[:username]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
-        $context = $service->context;
-        $username = $req->param("username");
-        $creator = DatabaseBootstrap::getUserRepo()->getByUsername($username);
-        if (null!==$creator)
-        {
-            $context->put(KEY_POSTPATH_POSTSLIST,"/profile/$username/post/%d");
-            $context->put("creator",$creator);
-            $context->put("postslist",$creator->getMyPosts());
-        }
-        else
-        {
-            $res->code(404);
-            $res->send();
-            return;
-        }
-        return ViewTemplate::render("user/publicprofile.twig",$context->toArray());
-    });
-
-    $router->get("/[:username]/post/[:postid]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
-        $me = $service->context->get("me");
-        $username = $req->paramsNamed()->get("username");
-        if (null!==$me && $me->getUsername()===$username)
-        {
-            $postid = $req->paramsNamed()->get("postid");
-            $res->redirect("/post/mypost/$postid");
-            return;
-        }
+    $router->get("/post/[:postid]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
         return viewpost($req,$res,$service,$app);
     });
 });
 
-$router->with("/post", function($router){
+$router->get("/posts/recent/[:postid]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app) use($router){
+    return viewpost($req,$res,$service,$app,"recent");
+});
 
-    $router->get("/delete/[:postid]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
-        checkLoggedInOrRedirect($res,$service);
-        $postid = (int) $req->paramsNamed()->get("postid");
-        $removed = DatabaseBootstrap::getPostRepo()->removePost($postid);
-        if (!$removed)
-        {
-            $res->code(500);
-            $res->body("Fail to delte post due to server side error, please try again");
-            $res->send();
-        }
-        $res->redirect("/");
-    });
 
-    $router->respond(array("GET","POST"),"/[recent|mypost:page]/[:postid]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
-        $page = (string) $req->paramsNamed()->get("page");
-        return viewpost($req,$res,$service,$app,$page);
-    });
 
-    $router->respond(array("GET","POST"),"/create",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
+
+$router->with("/post/", function($router){
+
+    $router->respond(array("GET","POST"),"create",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app) use($router){
         if (checkLoggedInOrRedirect($res,$service)) return;
         $context = $service->context;
         if ($req->method("POST"))
@@ -392,60 +381,75 @@ $router->with("/post", function($router){
             $saved = $postRepo->save($post);
             if (!$saved)
             {
-                $res->code(500);
-                $res->body("Fail to create post due to server error, please try again");
-                $res->send();
-                return;
+                $router->abort(500);
             }
             else 
             {
-                $postId = $postRepo->getLastId();
-                $res->redirect("/post/mypost/$postId");
+                $res->redirect(sprintf("/profile/%s/post/%d",$post->getCreator()->getUsername(),$post->getPostId()));
                 return;
             }
         }
         return ViewTemplate::render("user/savepost.twig",$context->toArray());
     });
 
-    $router->respond(array("GET","POST"),"/edit/[:postid]",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
-        if (checkLoggedInOrRedirect($res,$service)) return;
-        $context = $service->context;
-        $postid = (int) $req->paramsNamed()->get("postid");
-        $postRepo = DatabaseBootstrap::getPostRepo();
-        $post = $postRepo->find($postid);
-        if (null===$post)
-        {
-            $res->code(404);
-            $res->send();
-            return;
-        }
-        else
-        {
-            $postDto = new PostDTO($post);
-            if ($req->method("POST"))
+    $router->with("[:postid]/", function($router){
+        $router->get("delete",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app) use($router){
+            if (checkLoggedInOrRedirect($res,$service)) return;
+            $postid = (int) $req->paramsNamed()->get("postid");
+            $removed = DatabaseBootstrap::getPostRepo()->removePost($postid);
+            $res->noCache();
+            if (!$removed)
             {
-                $postDto->valuesFormInput($_POST);
-                $updatedpost = $postDto->toPost($post->getCreator(),$post);
-                $saved = $postRepo->save($updatedpost);
-                if (!$saved)
-                {
-                    $res->code(500);
-                    $res->body("Fail to save post due to server error, please try again");
-                    $res->send();
-                    return;
-                }
-                else 
-                {
-                    $res->redirect("/post/mypost/$postid");
-                }
+                $router->abort(500);
             }
-            $context->put("postDto",$postDto);
-        }
-        return ViewTemplate::render("user/savepost.twig",$context->toArray());
-    });   
+            $res->redirect("/");
+        });
+    
+        $router->respond(array("GET","POST"),"edit",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app) use($router){
+            if (checkLoggedInOrRedirect($res,$service)) return;
+            $context = $service->context;
+            $postid = (int) $req->paramsNamed()->get("postid");
+            $postRepo = DatabaseBootstrap::getPostRepo();
+            $post = $postRepo->find($postid);
+            if (null===$post)
+            {
+                $router->abort(404);
+            }
+            else
+            {
+                $me = $context->get("me");
+                if ($me->getUserId()!==$post->getCreator()->getUserId())
+                {
+                    $router->abort(403);
+                }
+                $postDto = new PostDTO($post);
+                if ($req->method("POST"))
+                {
+                    $postDto->valuesFormInput($_POST);
+                    $updatedpost = $postDto->toPost($post->getCreator(),$post);
+                    $saved = $postRepo->save($updatedpost);
+                    if (!$saved)
+                    {
+                        $router->abort(500);
+                    }
+                    else 
+                    {
+                        $res->redirect(sprintf("/profile/%s/post/%d",$updatedpost->getCreator()->getUsername(),$updatedpost->getPostId()));
+                        return;
+                    }
+                }
+                $context->put("postDto",$postDto);
+            }
+            $context->put("title","Edit ".$post->getTitle());
+            return ViewTemplate::render("user/savepost.twig",$context->toArray());
+        }); 
+    });
+
+      
 });
 
 $router->get("/logout",function(Request $req,AbstractResponse $res, ServiceProvider $service, App $app){
+    $res->noCache();
     if (!checkLoggedInOrRedirect($res,$service))
     {
         $authservice = $app->authservice();

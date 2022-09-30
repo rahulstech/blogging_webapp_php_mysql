@@ -23,7 +23,6 @@ class ViewTemplate
 
             $twigenv = new Environment($fsloader, $options);
             $twigenv->addExtension(new TwigFunctions());
-            $twigenv->addGlobal("__GET",$_GET);
 
             ViewTemplate::$twigenv = $twigenv;
         }

@@ -4,6 +4,7 @@ namespace Rahulstech\Blogging\Helpers\Twig;
 use DateTime;
 use Twig\TwigFunction;
 use Twig\Extension\AbstractExtension;
+use Rahulstech\Blogging\Helpers\Helper;
 
 class TwigFunctions extends AbstractExtension
 {
@@ -13,17 +14,12 @@ class TwigFunctions extends AbstractExtension
     public function getFunctions(): array
     {
         return array(
-            new TwigFunction("fullname",[$this,"fullname"]),
+            new TwigFunction("fullname",[Helper::class,"fullname"]),
             new TwigFunction("buildpath",[$this,"buildpath"]),
             new TwigFunction("appendquery",[$this,"appendquery"]),
             new TwigFunction("formatprettydateshort",[$this,"formatprettydateshort"]),
             new TwigFunction("formatprettydatetimeshort",[$this,"formatprettydatetimeshort"])
         );
-    }
-    
-    public function fullname(...$pieces): string
-    {
-        return implode(" ",$pieces);
     }
 
     public function formatprettydateshort(DateTime $dattime): string 

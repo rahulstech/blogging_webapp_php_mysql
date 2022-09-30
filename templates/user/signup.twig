@@ -8,9 +8,9 @@
 
 <div class="container-fluid w-50 mx-auto">
     <form action="" method="POST" enctype="multipart/form-data">
-        <div class="row">
+        <div class="row mb-3">
             <div class="col-lg-10 col-12">
-                <div class="form-floating mb-3">
+                <div class="form-floating">
                     <input name="username" value="{{ userDto.username }}" required type="text" 
                         class="form-control {{userDto.errors.username ? "is-invalid"}}" id="floatingUsername"
                         placeholder="Username">
@@ -21,12 +21,17 @@
                     </div>
                     {% endif %}
                 </div>
+                <div class="mt-1 w-100">
+                    <div class="float-end">
+                        <small class="text-muted" id="unCounter"></small>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-3">
             <div class="col-lg-5 col-12">
-                <div class="form-floating mb-3">
+                <div class="form-floating">
                     <input name="password" required type="password" 
                             class="form-control {{userDto.errors.password ? "is-invalid"}}" id="floatingPassword"
                         placeholder="Password">
@@ -37,11 +42,19 @@
                     </div>
                     {% endif %}
                 </div>
+                <div class="w-100 mt-1">
+                    <div class="float-start">
+                        <input type="checkbox" id="cbPassword" class="form-check-input me-2"/><label for="cbPassword" class="text-muted">Show Password</label>
+                    </div>
+                    <div class="float-end">
+                        <small class="text-muted" id="pwdCounter"></small>
+                    </div>
+                </div>
             </div>
 
             <div class="col-lg-5 col-12">
-                <div class="form-floating mb-3">
-                    <input name="confirmPassword" required type="password" 
+                <div class="form-floating">
+                    <input name="password" required type="password" 
                             class="form-control {{userDto.errors.confirmPassword ? "is-invalid"}}" id="floatingConfirmPassword"
                         placeholder="Confirm Password">
                     <label for="floatingConfirmPassword">Confirm Password</label>
@@ -51,12 +64,20 @@
                     </div>
                     {% endif %}
                 </div>
+                <div class="w-100 mt-1">
+                    <div class="float-start">
+                        <input type="checkbox" id="cbcPassword" class="form-check-input me-2"/><label for="cbcPassword" class="text-muted">Show Confirm Password</label>
+                    </div>
+                    <div class="float-end">
+                        <small class="text-muted" id="cpwdCounter"></small>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-3">
             <div class="col-lg-5 col-12">
-                <div class="form-floating mb-3">
+                <div class="form-floating">
                     <input name="firstName" value="{{ userDto.firstName }}" required type="text" 
                             class="form-control {{userDto.errors.firstName ? "is-invalid"}}" id="floatingFirstname"
                         placeholder="First Name">
@@ -70,7 +91,7 @@
             </div>
 
             <div class="col-lg-5 col-12">
-                <div class="form-floating mb-3">
+                <div class="form-floating">
                     <input name="lastName" value="{{ userDto.lastName }}" required type="text" 
                             class="form-control {{ userDto.errors.lastName ? "is-invalid"}}" id="floatingLastname"
                         placeholder="Last Name">
@@ -84,9 +105,9 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-3">
             <div class="col-lg-10 col-12">
-                <div class="form-floating mb-3">
+                <div class="form-floating">
                     <input name="email" value="{{ userDto.email }}" required type="email" 
                             class="form-control {{userDto.errors.email ? "is-invalid"}}" id="floatingEmail"
                         placeholder="Email">
@@ -116,4 +137,18 @@
     </form>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    $(document).ready(e => {
+        blogging.TextCounter("floatingUsername","unCounter");
+        blogging.PasswordVisibilityToggle("cbPassword","floatingPassword");
+        blogging.TextCounter("floatingPassword","pwdCounter");
+        blogging.PasswordVisibilityToggle("cbcPassword","floatingConfirmPassword");
+        blogging.TextCounter("floatingConfirmPassword","cpwdCounter");
+    });
+</script>
+    
 {% endblock %}
