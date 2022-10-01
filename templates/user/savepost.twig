@@ -12,10 +12,15 @@
         <div class="row mb-3 justify-content-center">
             <div class="col-lg-10 col-12">
                 <div class="form-floating">
-                    <input name="title" required type="text" class="form-control" id="floatingTitle"
+                    <input maxlength="100" name="title" required type="text" class="form-control" id="floatingTitle"
                         value="{{postDto.title}}"
                         placeholder="Title">
                     <label for="floatingTitle">Title</label>
+                </div>
+                <div class="w-100">
+                    <div class="float-end">
+                        <small id="tCounter"></small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -23,16 +28,27 @@
         <div class="row mb-3 justify-content-center">
             <div class="col-lg-10 col-12">
                 <div class="form-floating">
-                    <input name="shortDescription" type="text" class="form-control" id="floatingShortDescription"
+                    <input maxlength="200" name="shortDescription" type="text" class="form-control" id="floatingShortDescription"
                         value="{{postDto.shortDescription}}"
                         placeholder="Title">
                     <label for="floatingShortDescription">Short Description</label>
+                </div>
+                <div class="w-100">
+                    <div class="float-end">
+                        <small id="shdescCounter"></small>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="row mb-3 justify-content-center">
             <div class="col-lg-10 col-12">
+                <div class="w-100">
+                    <div class="float-end">
+                        <small id="txcCounter"></small>
+                    </div>
+                </div>
+        
                 <label for="textContent" class="form-label">Your Post</label>
                 <textarea name="textContent" class="form-control" id="textContent" rows="15">{{postDto.textContent}}</textarea>
             </div>
@@ -45,5 +61,18 @@
         </div>
     </form>
 </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+    $(document).ready(e => {
+        blogging.TextCounter("floatingTitle", "tCounter");
+        blogging.TextCounter("floatingShortDescription", "shdescCounter");
+        blogging.TextCounter("textContent", "txcCounter");
+    });
+</script>
 
 {% endblock %}

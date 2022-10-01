@@ -43,12 +43,15 @@ class AuthToken
         $value = array(
             "userId" => $this->userId
         );
-        return json_encode($value,JSON_FORCE_OBJECT);
+        $encoded = json_encode($value,JSON_FORCE_OBJECT);
+        $authtoken = base64_encode($encoded);
+        return $authtoken;
     }
 
     public static function decode(string $authtoken): AuthToken
     {
-        $decoded = json_decode($authtoken,true);
+        $base64 = base64_decode($authtoken,true);
+        $decoded = json_decode($base64,true);
         return new AuthToken($decoded);
     }
 }

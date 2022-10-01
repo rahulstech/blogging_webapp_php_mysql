@@ -1,0 +1,26 @@
+/**
+ * Remove .example from this file and place it in the project root directory.
+ * Change the bellow values as necessary. don't change const name of any variable
+ */
+<?php
+
+# database
+const DB_DRIVER="mysqli";
+const DB_USER="";
+const DB_PASS="";
+const DB_NAME="";
+const DB_HOST="localhost";
+const DB_PORT="3306";
+const DB_MAX_RESULT=20;
+
+const TEST_DB_DRIVER="pdo_sqlite";
+
+
+# view templating
+const VIEW_TEMPLATE=__DIR__."/templates";
+const VIEW_CACHE=__DIR__."/storage/cache/view";
+
+# routing
+const ROUTER_DEFINATIONS= array(__DIR__."/routers/user_routes.php");
+
+?>

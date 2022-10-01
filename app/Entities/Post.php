@@ -114,13 +114,12 @@ class Post {
 		if (null!==$dto->title) $post->title = $dto->title;
 		if (null!==$dto->shortDescription) $post->shortDescription = $dto->shortDescription;
 		if (null!==$dto->textContent) $post->textContent = $dto->textContent;
-		if (null===$post->shortDescription && $post->textContent)
+		if ((null===$post->shortDescription || ""===$post->shortDescription) && null!==$post->textContent)
 		{
 			$textContent = $post->textContent;
 			$clen = strlen($textContent);
-			$len = min($clen,197);
+			$len = min($clen,200);
 			$shortDescription = substr($textContent,0,$len);
-			if ($clen > $len) $shortDescription .= "...";
 			$post->shortDescription = $shortDescription;
 		}
 		return $post;

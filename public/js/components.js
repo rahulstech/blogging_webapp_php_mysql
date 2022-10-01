@@ -1,14 +1,17 @@
 var blogging = {
     TextCounter: function (inpId, outId) {
-        const inp = $("#" + inpId);
-        const out = $("#" + outId);
+        const inp = document.getElementById(inpId);
+        const out = document.getElementById(outId);
         if (inp && out)
         {
-            const max = parseInt(inp.attr("maxlength")) || Infinity;
-            blogging.showCounterOutput(inp,out,max);
-            inp.keypress(e => {
-                blogging.showCounterOutput(inp,out,max);
-            })
+            const max = parseInt(inp.getAttribute("maxlength")) || Infinity;
+            const callback = counter => {
+                var state = max === Infinity ? counter.characters : counter.all+"/"+max;
+                out.innerHTML = state;
+            };
+
+            Countable.count(inp, callback);
+            Countable.on(inp,callback);
         }
     },
     PasswordVisibilityToggle: function (btnId, inpId) {
@@ -33,9 +36,5 @@ var blogging = {
                 document.body.classList.toggle('sb-sidenav-toggled');
             });
         }
-    },
-    showCounterOutput: function (inp,out,max) {
-        var counter = max === Infinity ? inp.val().length : inp.val().length+"/"+max;
-        out.html(counter);
     }
 };

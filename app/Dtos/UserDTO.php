@@ -82,6 +82,11 @@ class UserDTO
         return $this->checkPasswordStrength() && $this->checkConfirmPassword(); 
     }
 
+    public function validateEditPersonalDetails(): bool 
+    {
+        return $this->checkEmail();
+    }
+
     public function checkPasswordStrength(): bool  
     {
         $regexsym = "/[#?!@$%^&*-]+/";

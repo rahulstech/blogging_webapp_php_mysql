@@ -15,42 +15,177 @@
 
 <div class="d-flex wrapper">
 
+    <!-- START: collapsable left side navigation panel -->
     <div class="sidebar-wrapper">
         <div class="list-group list-group-flush">
-            <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">About
+            <a class="list-group-item list-group-item-action  p-3 {{section == "about" ? "active" }}"
+                href="/profile/{{creator.username}}/">About
                 <b>{{fullname(creator.firstName,creator.lastName)}}</b></a>
-            <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Posts</a>
+            <a class="list-group-item list-group-item-action p-3 {{section == "posts" ? "active" }}"
+                href="/profile/{{creator.username}}/posts">Posts</a>
             {% if me == creator %}
-            <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Edit Personal
-                Details</a>
+            <a class="list-group-item list-group-item-action p-3" data-bs-toggle="collapse" role="button"
+                aria-expanded="false" aria-controls="profileEditOptions" href="#profileEditOptions">
+                Edit
+                <i class="float-end fa fa-caret-down me-2"></i>
+            </a>
+            <div class="collapse {{ section in ["about","posts"] ? "hide" : "show" }}" id="profileEditOptions">
+                <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action p-3 {{section == "editpersonaldetails" ? "active"
+                        }}" href="/profile/{{creator.username}}/edit/personaldetails">Personal Details</a>
+
+                    <a class="list-group-item list-group-item-action p-3 {{section == "editlogindetails" ? "active" }}"
+                        href="/profile/{{creator.username}}/edit/logindetails">
+                        Log In Details</a>
+                </div>
+            </div>
             {% endif %}
         </div>
     </div>
+    <!-- END: collapsable left side navigation panel -->
 
     <div class="page-content-wrapper">
-
-
-        {% if section == "creatorandposts" %}
-
         <div class="container-fluid">
+
+            {% if section == "posts" %}
+
+            {% if me.username == creator.username %}
+
+            <div class="container-fluid d-flex justify-content-end mb-3">
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllPostsConfirm">
+                    <i class="fa fa-trash"></i>
+                    Delete All Posts
+                </button>
+            </div>
+                
+            {% endif %}
+
+            {% include "user/postslist.twig" %}
+
+            <!-- START: confirmation modal before delete all posts -->
+            <div class="modal fade" id="deleteAllPostsConfirm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="deleteAllPostsConfirmTitle" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-center" id="deleteAllPostsConfirmTitle">Confirm Delete All Posts</h5>
+                        </div>
+                        <div class="modal-body">
+                            You are about to delete all your posts. You cann't restore your posts later any way. Confirm to proceed
+                            or cancel.
+                        </div>
+                        <div class="modal-footer">
+                            <form action="/profile/{{me.username}}/posts/delete" method="POST">
+                                <button type="submit" class="btn" data-bs-dismiss="modal">Confirm</button>
+                            </form>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END: confirmation modal before delete all posts -->
+
+            {% elseif section == "about" %}
+
             <div class="text-center mb-3">
-                <p>
-                    <span class="display-5">{{fullname(creator.firstName,creator.lastName)}}</span>
-                    <small class="text-muted">since {{formatprettydateshort(creator.joinedOn)}}</small>
+                <p class="d-flex flex-column">
+                    <span class="display-5 mb-3">{{fullname(creator.firstName,creator.lastName)}}</span>
+                    <small class="text-muted"><i class="fa fa-calendar me-2"></i><i>Joined On
+                            {{formatprettydateshort(creator.joinedOn)}}</i></small>
                 </p>
                 <p>
-                    <i class="fa fa-envelope"></i>
+                    <i class="fa fa-envelope me-2"></i>
                     <a href="mailto:{{creator.email}}" target="_blank" class="text-secondary">{{creator.email}}</a>
                 </p>
             </div>
-            {% include "user/postslist.twig" %}
+
+            {% elseif section == "editlogindetails" %}
+
+            <div class="w-75 mx-auto justify-content-center">
+                <p class="display-5 border-bottom border-1 border-secondary pb-3 text-center">
+                    Update Log In Details
+                </p>
+            </div>
+
+            <form action="" method="POST" enctype="multipart/form-data">
+                <div class="row mx-auto w-75 mb-3">
+
+                    <div class="col-8">
+                        <div class="form-floating">
+                            <input name="username" value="{{ userDto.username }}" required type="text"
+                                class="form-control" id="floatingUsername" placeholder="Username">
+                            <label for="floatingUsername">Username</label>
+                        </div>
+                    </div>
+
+                    <div class="col-4 align-self-center">
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa fa-floppy-o me-2" aria-hidden="true"></i>Save</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="row mx-auto w-75 mb-3">
+                <div class="col-4 align-self-center">
+                    <a href="/changepassword" class="btn btn-warning float-start">
+                        <i class="fa fa-key"></i>
+                        Change Password
+                    </a>
+                </div>
+            </div>
+
+            {% elseif section == "editpersonaldetails" %}
+
+            <div class="w-75 mx-auto justify-content-center">
+                <p class="display-5 border-bottom border-1 border-secondary pb-3 text-center">
+                    Update Personal Details
+                </p>
+            </div>
+
+            <form action="" method="POST" enctype="multipart/form-data">
+                <div class="row mx-auto w-50">
+
+                    <div class="col-lg-6 col-12">
+                        <div class="form-floating mb-3">
+                            <input name="firstName" value="{{ userDto.firstName }}" required type="text"
+                                class="form-control" id="floatingFirstname" placeholder="First Name">
+                            <label for="floatingFirstname">First Name</label>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-12">
+                        <div class="form-floating mb-3">
+                            <input name="lastName" value="{{ userDto.lastName}}" required type="text"
+                                class="form-control" id="floatingLastname" placeholder="Last Name">
+                            <label for="floatingLastname">Last Name</label>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row w-50 mx-auto mb-3">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input name="email" value="{{ userDto.email }}" required type="email" class="form-control"
+                                id="floatingEmail" placeholder="Email">
+                            <label for="floatingEmail">Email</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-auto">
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa fa-floppy-o me-2" aria-hidden="true"></i>Save</button>
+                    </div>
+                    
+                </div>
+            </form>
+            
+
+            {% endif %}
         </div>
-
-        {% endif %}
     </div>
-
-
-
 </div>
 
 {% endblock %}

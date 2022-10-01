@@ -7,7 +7,15 @@
 {% block content %}
 
 <div class="container-fluid w-50 mx-auto">
-    <form action="/login" method="POST" enctype="multipart/form-data">
+
+    <div class="row mb-4">
+        <div class="col-lg-10 col-12">
+            <p class="h3 border-bottom border-1 border-secondary pb-3 text-center">Log In</p>
+        </div>
+    </div>
+    
+
+    <form action="/login" method="POST" enctype="multipart/form-data" >
         <div class="row mb-3">
             <div class="col-lg-10 col-12">
                 <div class="form-floating">
@@ -53,7 +61,7 @@
         </div>
 
         <div class="row justify-content-center">
-            <div class="col-4">
+            <div class="col-5">
                 <button type="submit" class="btn btn-primary mb-3"><i class="fa fa-sign-in me-2"
                         aria-hidden="true"></i>Log In</button>
             </div>
@@ -74,7 +82,9 @@
 
 <script>
     $(document).ready(e => {
+        blogging.TextCounter("floatingUsername","unCounter");
         blogging.PasswordVisibilityToggle("cbPassword","floatingPassword");
+        blogging.TextCounter("floatingPassword","pwdCounter");
     });
 </script>
     

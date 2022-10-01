@@ -71,8 +71,9 @@
                 or cancel.
             </div>
             <div class="modal-footer">
-                <a href="/post/{{currentpost.postId}}/delete" class="btn"
-                    >Confirm</a>
+                <form action="/post/{{currentpost.postId}}/delete" method="POST">
+                    <input type="submit" class="btn" value="Confirm"/>
+                </form>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>

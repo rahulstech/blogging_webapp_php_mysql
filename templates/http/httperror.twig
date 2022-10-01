@@ -5,18 +5,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row row-col-auto justify-content-center">
-        <div class="col-auto">
-            <img src="{{imagefile}}" width="450" height="350" alt="http {{code}} error"/>
-        </div>
-        <div class="col-auto">
-            <p class="lead">
-                {{error}}
-            </p>
-        </div>
-    </div>
-    
-    
+<div class="w-100 mx-auto my-auto d-flex justify-content-center">
+    <img src="{{imagefile}}" width="450" height="350" alt="http {{code}} error" />
 </div>
 {% endblock %}
